@@ -1,0 +1,5 @@
+name: CraftingMenu
+main: net.samongi.CraftingMenu.CraftingMenu
+version: 0.0
+description: Adds a crafting menu.
+author: Migsect
