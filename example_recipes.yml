@@ -1,0 +1,38 @@
+recipes:
+  example-recipe-1:
+    name: "Example Recipe 1"
+    permission: "example.permission.one"
+    learned: true
+    hidden: false
+    sorting-tags:
+     - example_recipes
+  example-recipe-2:
+    name: "Example Recipe 2"
+    permission: "example.permission.two"
+    learned: false
+    hidden: true
+    sorting-tags:
+     - example_recipes
+  example-recipe-3:
+    name: "Example Recipe 3"
+    permission: "example.permission.three"
+    learned: false
+    hidden: false
+    conflict-pool:
+     - Example Recipe 1
+    learn-pool:
+     - Example Recipe 4
+    sorting-tags:
+     - example_recipes
+    example-recipe-3:
+  example-recipe-4:
+    name: "Example Recipe 4"
+    permission: "example.permission.four"
+    learned: false
+    hidden: false
+    prerequisites:
+     - Example Recipe 3
+    learn-pool:
+     - Example Recipe 4
+    sorting-tags:
+     - example_recipes

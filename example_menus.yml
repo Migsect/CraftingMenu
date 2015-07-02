@@ -1,0 +1,21 @@
+menus:
+  example-menu-1:
+    name: Example Menu 1
+    recipes:
+     - Example Recipe 1
+     - Example Recipe 2
+     - Example Recipe 3
+     - Example Recipe 4
+    sub-menus:
+     - Example Menu 2
+    block-material: WORKBENCH:0
+    block-material-type: SHIFT_RIGHT_CLICK
+  example-menu-2:
+    name: Example Menu 2
+    recipes:
+     - Example Recipe 1
+     - Example Recipe 4
+     - Example Recipe 5
+     - Example Recipe 6
+    click-material: STICK:0
+    click-material-type: RIGHT_CLICK_ALL

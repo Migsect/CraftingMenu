@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.samongi.CraftingMenu.CraftingMenu;
+import net.samongi.SamongiLib.Items.ItemUtil;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -18,7 +19,7 @@ import org.bukkit.inventory.ItemStack;
 public class Recipe
 {
   static private void log(String message){CraftingMenu.log("[Recipe] " + message);}
-  static private void logDebug(String message){CraftingMenu.debugLog("[Recipe] " + message);}
+  static private void debugLog(String message){CraftingMenu.debugLog("[Recipe] " + message);}
   
   // The recipe manager holds all the recipe objects in the server.
   private final RecipeManager manager;
@@ -64,53 +65,58 @@ public class Recipe
   {
     this.manager = manager;
     
-    Recipe.logDebug("Parsing Recipe with path: " + section.getCurrentPath());
+    Recipe.debugLog("Parsing Recipe with path: " + section.getCurrentPath());
     this.recipe_name = section.getString("name");
     if(recipe_name == null)
     {
       Recipe.log("Recipe Name was not set for: " + section.getCurrentPath());
       Recipe.log("  This recipe will not be registered until it is given a name.");
     }
-    Recipe.logDebug("Found recipe name to be: " + this.recipe_name );
+    Recipe.debugLog("Found recipe name to be: " + this.recipe_name );
     
-    /* 
-     *  TODO: Add components and results connecting (handled by the item handler)
-     */
+    if(section.getKeys(false).contains("components"))
+    {
+      ConfigurationSection components = section.getConfigurationSection("components");
+      Set<String> item_keys = components.getKeys(false);
+      for(String k : item_keys)
+      {
+        ItemStack i = ItemUtil.getConfigItemStack(components.getConfigurationSection(k));
+        this.components.add(i);
+      }
+    }
+    Recipe.debugLog("Found Components Amount: " + this.components.size());
     
     this.permission = section.getString("permission", "");
-    Recipe.logDebug("Found recipe permission to be: " + this.permission );
+    Recipe.debugLog("Found recipe permission to be: " + this.permission );
     
     this.learned = section.getBoolean("learned", false);
-    Recipe.logDebug("Found recipe learned to be: " + this.learned );
+    Recipe.debugLog("Found recipe learned to be: " + this.learned );
     
     this.hidden = section.getBoolean("hidden", false);
-    Recipe.logDebug("Found recipe hidden to be: " + this.hidden );
+    Recipe.debugLog("Found recipe hidden to be: " + this.hidden );
     
     List<String> prerequisites = section.getStringList("prerequisites");
     if(prerequisites != null) this.prerequisites.addAll(prerequisites);
-    Recipe.logDebug("Found recipe prerequisites to be: ");
-    if(CraftingMenu.debug()) for(String s : prerequisites) Recipe.logDebug(" - " + s);
+    Recipe.debugLog("Found recipe prerequisites to be: ");
+    if(CraftingMenu.debug()) for(String s : prerequisites) Recipe.debugLog(" - " + s);
     
     List<String> learn_pool = section.getStringList("learn-pool");
     if(learn_pool != null) this.learn_pool.addAll(learn_pool);
-    Recipe.logDebug("Found recipe learn pool to be: ");
-    if(CraftingMenu.debug()) for(String s : learn_pool) Recipe.logDebug(" - " + s);
+    Recipe.debugLog("Found recipe learn pool to be: ");
+    if(CraftingMenu.debug()) for(String s : learn_pool) Recipe.debugLog(" - " + s);
     
     List<String> conflict_pool = section.getStringList("conflict-pool");
     if(conflict_pool != null) this.learn_pool.addAll(conflict_pool);
-    Recipe.logDebug("Found recipe conflict pool to be: ");
-    if(CraftingMenu.debug()) for(String s : conflict_pool) Recipe.logDebug(" - " + s);
+    Recipe.debugLog("Found recipe conflict pool to be: ");
+    if(CraftingMenu.debug()) for(String s : conflict_pool) Recipe.debugLog(" - " + s);
     
     List<String> sorting_tags = section.getStringList("sorting-tags");
     if(sorting_tags != null) this.sorting_tags.addAll(sorting_tags);
-    Recipe.logDebug("Found recipe sprtomg tahs to be: ");
-    if(CraftingMenu.debug()) for(String s : sorting_tags) Recipe.logDebug(" - " + s);
+    Recipe.debugLog("Found recipe sorting tags to be: ");
+    if(CraftingMenu.debug()) for(String s : sorting_tags) Recipe.debugLog(" - " + s);
     
     // Cleaning up the learn_pool of conflicts.
     this.learn_pool.removeAll(conflict_pool);
-    
-    // Adding the recipe to the Recipe Manager.
-    manager.addRecipe(this);
   }
   
   public String getName(){return this.recipe_name;}

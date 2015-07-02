@@ -20,8 +20,9 @@ import org.bukkit.entity.Player;
 
 public class PlayerProfile implements Serializable
 {
+  @SuppressWarnings("unused")
   static private void log(String message){CraftingMenu.log("[PlayerProfile] " + message);}
-  static private void logDebug(String message){CraftingMenu.debugLog("[PlayerProfile] " + message);}
+  static private void debugLog(String message){CraftingMenu.debugLog("[PlayerProfile] " + message);}
   
   /**Will save the profile to file within the directory.
    * @param dir The directory where the file is located.
@@ -36,7 +37,7 @@ public class PlayerProfile implements Serializable
     {
       if(!file.exists())
       {
-        PlayerProfile.logDebug("File does not yet exist, making file: " + file.getAbsolutePath());
+        PlayerProfile.debugLog("File does not yet exist, making file: " + file.getAbsolutePath());
         file.createNewFile();
       }
       FileOutputStream file_out = new FileOutputStream(file);
@@ -64,8 +65,8 @@ public class PlayerProfile implements Serializable
     File file = new File(dir, player_uuid.toString() + ".dat");
     if(!file.exists() || file.isDirectory()) 
     {
-      PlayerProfile.logDebug("Profile not found or is directory for file: " + file.getAbsolutePath());
-      PlayerProfile.logDebug("  Returning new profile object for player: '" + player_uuid + "'");
+      PlayerProfile.debugLog("Profile not found or is directory for file: " + file.getAbsolutePath());
+      PlayerProfile.debugLog("  Returning new profile object for player: '" + player_uuid + "'");
       return new PlayerProfile(player_uuid);
     }
     PlayerProfile ret = null;
@@ -139,6 +140,6 @@ public class PlayerProfile implements Serializable
       for(Recipe ar : add_recipes) learned_recipes.add(ar.getName());
     }
   }
-  public boolean saveProfile(File file){return PlayerProfile.saveProfile(file, this);}
+  public boolean saveProfile(File dir){return PlayerProfile.saveProfile(dir, this);}
   
 }

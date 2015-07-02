@@ -26,49 +26,78 @@ import net.samongi.CraftingMenu.Recipe.RecipeManager;
 public class Menu
 {
   static private void log(String message){CraftingMenu.log("[Menu] " + message);}
-  static private void logDebug(String message){CraftingMenu.debugLog("[Menu] " + message);}
+  static private void debugLog(String message){CraftingMenu.debugLog("[Menu] " + message);}
   
   private final MenuManager manager;
   private final String menu_name;
   private final Map<Integer, String> sub_menus = new HashMap<>();
   private final Set<String> recipes = new HashSet<>();
   
+  private final String click_material;
+  private final String click_material_type;
+  
+  private final String block_material;
+  private final String block_material_type;
+  
   public Menu(MenuManager manager, ConfigurationSection section)
   {
     this.manager = manager;
     
-    Menu.logDebug("Parsing Menu with path: " + section.getCurrentPath());
+    Menu.debugLog("Parsing Menu with path: " + section.getCurrentPath());
+    // Getting the menu name
     this.menu_name = section.getString("name");
     if(menu_name == null)
     {
       Menu.log("Menu Name was not set for: " + section.getCurrentPath());
       Menu.log("  This menu will not be registered until it is given a name.");
     }
-    Menu.logDebug("Found menu name to be: " + this.menu_name);
+    Menu.debugLog("Found menu name to be: " + this.menu_name);
     
+    // Getting all the recipes in this menu
     List<String> recipes = section.getStringList("recipes");
     if(recipes != null) this.recipes.addAll(recipes);
-    Menu.logDebug("Found recipes to be: ");
-    if(CraftingMenu.debug()) for(String s : recipes) Menu.logDebug(" - " + s);
+    Menu.debugLog("Found recipes to be: ");
+    if(CraftingMenu.debug()) for(String s : recipes) Menu.debugLog(" - " + s);
     
-    ConfigurationSection menu_section = section.getConfigurationSection("sub-menus");
-    if(menu_section != null)
+    // Getting all the submenus
+    ConfigurationSection sub_menu_section = section.getConfigurationSection("sub-menus");
+    if(sub_menu_section != null)
     {
       // Now we get all the keys in this section.
-      Set<String> keys = menu_section.getKeys(false);
+      Set<String> keys = sub_menu_section.getKeys(false);
       for(String k : keys)
       {
         int i = -1;
         try{Integer.parseInt(k);}catch(NumberFormatException e){;}
         if(i < 0) continue;
-        
+        sub_menus.put(i, sub_menu_section.getString(k));
       }
     }
     
+    // Getting where the item can be used.
+    this.click_material = section.getString("click-material", null);
+    this.click_material_type = section.getString("click-material-type", null);
+    this.block_material = section.getString("block-material", null);
+    this.block_material_type = section.getString("block-material-type", null);
+
+    Menu.debugLog("Found Click Material to be: " + this.click_material);
+    Menu.debugLog("Found Click Material Type to be: " + this.click_material_type);
+    Menu.debugLog("Found Block Material to be: " + this.block_material);
+    Menu.debugLog("Found Block Material Type to be: " + this.block_material_type);
     
   }
   
-  public String getName(){return this.getName();}
+  public String getName(){return this.menu_name;}
+  
+  public boolean hasClickMaterial(){return this.click_material != null;}
+  public boolean hasClickMaterialType(){return this.click_material_type != null;}
+  public String getClickMaterial(){return this.click_material;}
+  public String getClickMaterialType(){return this.click_material_type;}
+  
+  public boolean hasBlockMaterial(){return this.block_material != null;}
+  public boolean hasBlockMaterialType(){return this.click_material_type != null;}
+  public String getClickBlock(){return this.block_material;}
+  public String getClickBlockType(){return this.block_material_type;}
   
   /**Returns the number of recipes that will be shown to the
    *   specified player. Even if the recipe is not known, some recipes will be shown as they are not hidden.
@@ -100,7 +129,8 @@ public class Menu
     if(profile == null) return -1;
     for(String s : sub_menus.values())
     {
-      Menu m = this.manager.g
+      Menu m = this.manager.getMenu(s);
+      if(m == null) continue;
       count += m.getShownMenus(player); 
     }
     if(this.getShownRecipes(player) > 0) count++;
