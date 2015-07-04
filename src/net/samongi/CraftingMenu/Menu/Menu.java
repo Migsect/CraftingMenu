@@ -8,12 +8,14 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
 import net.samongi.CraftingMenu.CraftingMenu;
 import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Player.PlayerProfile;
 import net.samongi.CraftingMenu.Recipe.Recipe;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
+import net.samongi.SamongiLib.Menu.InventoryMenu;
 
 /** Menus consist of a list of recipes to display to a player
  *  However the menu also handls the hiding of recipes.
@@ -33,11 +35,18 @@ public class Menu
   private final Map<Integer, String> sub_menus = new HashMap<>();
   private final Set<String> recipes = new HashSet<>();
   
+  private final String display_material;
+  
+  // Filled with a material.
+  private final Map<String, Set<Integer>> filled_slots = new HashMap<>();
+  
   private final String click_material;
   private final String click_material_type;
   
   private final String block_material;
   private final String block_material_type;
+  
+  private final int rows = 6;
   
   public Menu(MenuManager manager, ConfigurationSection section)
   {
@@ -74,6 +83,19 @@ public class Menu
       }
     }
     
+    ConfigurationSection filled_slots = section.getConfigurationSection("filled-slots");
+    if(filled_slots != null)
+    {
+      Set<String> keys = filled_slots.getKeys(false);
+      for(String k : keys)
+      {
+        List<Integer> slots = filled_slots.getIntegerList(k);
+        if(slots == null) continue;
+        Set<Integer> slots_set = new HashSet<>(slots);
+        this.filled_slots.put(k, slots_set);
+      }
+    }
+    
     // Getting where the item can be used.
     this.click_material = section.getString("click-material", null);
     this.click_material_type = section.getString("click-material-type", null);
@@ -99,12 +121,37 @@ public class Menu
   public String getClickBlock(){return this.block_material;}
   public String getClickBlockType(){return this.block_material_type;}
   
+  public InventoryMenu getMenu(Player player)
+  {
+    InventoryMenu menu = new InventoryMenu(player, this.rows, this.getName());
+    
+    Set<Recipe> recipes = this.getShownRecipes(player.getUniqueId());
+    Set<String> menus = this.getShownMenus(player.getUniqueId());
+    Set<Integer> filled_slots = this.getAllFilledSlots();
+    
+    return menu;
+  }
+  
+  public Set<Recipe> getShownRecipes(UUID player)
+  {
+    Set<Recipe> seen_recipes = new HashSet<>();
+    PlayerProfile profile = PlayerManager.getManager().getProfile(player);
+    if(profile == null) return null;
+    for(String s : recipes)
+    {
+      Recipe r = RecipeManager.getManager().getRecipe(s);
+      if(r == null) continue;
+      if(profile.hasRecipe(r) || !r.isHidden()) seen_recipes.add(r);
+    }
+    return seen_recipes;
+  }
+  
   /**Returns the number of recipes that will be shown to the
    *   specified player. Even if the recipe is not known, some recipes will be shown as they are not hidden.
    * @param player The UUID of the player to check with.
    * @return The number of recipes the player will be shown in this menu.  -1 if the UUID has no profile.
    */
-  public int getShownRecipes(UUID player)
+  public int getShownRecipesNumber(UUID player)
   {
     int count = 0;
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
@@ -117,12 +164,26 @@ public class Menu
     }
     return count;
   }
+  
+  public Set<String> getShownMenus(UUID player)
+  {
+    Set<String> seen_recipes = new HashSet<>();
+    PlayerProfile profile = PlayerManager.getManager().getProfile(player);
+    if(profile == null) return null;
+    for(String s : recipes)
+    {
+      Recipe r = RecipeManager.getManager().getRecipe(s);
+      if(r == null) continue;
+      if(profile.hasRecipe(r) || !r.isHidden()) seen_recipes.add(s);
+    }
+    return seen_recipes;
+  }
   /**This will go through all submenus to see if they have recipes to show to the player
    *   The number of menus shown to the player will always be 1 as it includes the current menu.
    * @param player The player to check against
    * @return The number of all sub-menus that player will be able to reach.
    */
-  public int getShownMenus(UUID player)
+  public int getShownMenusNumber(UUID player)
   {
     int count = 0;
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
@@ -131,9 +192,19 @@ public class Menu
     {
       Menu m = this.manager.getMenu(s);
       if(m == null) continue;
-      count += m.getShownMenus(player); 
+      count += m.getShownMenusNumber(player); 
     }
-    if(this.getShownRecipes(player) > 0) count++;
+    if(this.getShownMenusNumber(player) > 0) count++;
     return count;
+  }
+  
+  public Set<Integer> getAllFilledSlots()
+  {
+    Set<Integer> slots = new HashSet<>();
+    for(String k : this.filled_slots.keySet())
+    {
+      slots.addAll(this.filled_slots.get(k));
+    }
+    return slots;
   }
 }
