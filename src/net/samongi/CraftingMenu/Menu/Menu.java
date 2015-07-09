@@ -7,8 +7,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import net.samongi.CraftingMenu.CraftingMenu;
 import net.samongi.CraftingMenu.Player.PlayerManager;
@@ -16,6 +20,7 @@ import net.samongi.CraftingMenu.Player.PlayerProfile;
 import net.samongi.CraftingMenu.Recipe.Recipe;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
 import net.samongi.SamongiLib.Menu.InventoryMenu;
+import net.samongi.SamongiLib.Menu.ButtomAction.ButtonAction;
 
 /** Menus consist of a list of recipes to display to a player
  *  However the menu also handls the hiding of recipes.
@@ -35,7 +40,7 @@ public class Menu
   private final Map<Integer, String> sub_menus = new HashMap<>();
   private final Set<String> recipes = new HashSet<>();
   
-  private final String display_material;
+  private final Material display_material;
   
   // Filled with a material.
   private final Map<String, Set<Integer>> filled_slots = new HashMap<>();
@@ -61,6 +66,9 @@ public class Menu
       Menu.log("  This menu will not be registered until it is given a name.");
     }
     Menu.debugLog("Found menu name to be: " + this.menu_name);
+    
+    // Getting all display material
+    this.display_material = Material.getMaterial(section.getString("display", "GRASS"));
     
     // Getting all the recipes in this menu
     List<String> recipes = section.getStringList("recipes");
@@ -110,6 +118,7 @@ public class Menu
   }
   
   public String getName(){return this.menu_name;}
+  public Material getDisplayMaterial(){return this.display_material;}
   
   public boolean hasClickMaterial(){return this.click_material != null;}
   public boolean hasClickMaterialType(){return this.click_material_type != null;}
@@ -121,16 +130,45 @@ public class Menu
   public String getClickBlock(){return this.block_material;}
   public String getClickBlockType(){return this.block_material_type;}
   
-  public InventoryMenu getMenu(Player player)
+  public InventoryMenu getInventoryMenu(Player player)
   {
     InventoryMenu menu = new InventoryMenu(player, this.rows, this.getName());
-    
-    Set<Recipe> recipes = this.getShownRecipes(player.getUniqueId());
-    Set<String> menus = this.getShownMenus(player.getUniqueId());
+
+    Set<Menu> menus = this.getShownMenus(player.getUniqueId());
     Set<Integer> filled_slots = this.getAllFilledSlots();
+    Set<Recipe> recipes = this.getShownRecipes(player.getUniqueId());
+    
+    // creating all the sub menus.
+    for(Menu m : menus)
+    {
+      String display_name = m.getName();
+      int slot = -1;
+      for(Integer i : this.sub_menus.keySet()) if(this.sub_menus.get(i).equals(display_name)) slot = i;
+      if(slot < 0) continue;
+      Material display = m.getDisplayMaterial();
+      ButtonAction button = new ButtonAction()
+      {
+        Menu menu = m;
+        @Override
+        public void onButtonPress()
+        {
+          m.getInventoryMenu(player).openMenu();;
+        }
+      };
+      ItemStack button_item = new ItemStack(display);
+      ItemMeta im = button_item.getItemMeta();
+      im.setDisplayName(ChatColor.GREEN + display_name);
+      button_item.setItemMeta(im);
+      
+      menu.setItem(slot, button_item);
+      menu.addLeftClickAction(slot, button);
+    }
+    // creating all the filled slots.
+    
     
     return menu;
   }
+  
   
   public Set<Recipe> getShownRecipes(UUID player)
   {
@@ -165,18 +203,18 @@ public class Menu
     return count;
   }
   
-  public Set<String> getShownMenus(UUID player)
+  public Set<Menu> getShownMenus(UUID player)
   {
-    Set<String> seen_recipes = new HashSet<>();
+    Set<Menu> seen_menus = new HashSet<>();
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
     if(profile == null) return null;
-    for(String s : recipes)
+    for(String s : this.sub_menus.values())
     {
-      Recipe r = RecipeManager.getManager().getRecipe(s);
-      if(r == null) continue;
-      if(profile.hasRecipe(r) || !r.isHidden()) seen_recipes.add(s);
+      Menu m = this.manager.getMenu(s);
+      if(m == null) continue;
+      if(m.getShownRecipesNumber(player) + m.getShownMenusNumber(player) > 0) seen_menus.add(m);
     }
-    return seen_recipes;
+    return seen_menus;
   }
   /**This will go through all submenus to see if they have recipes to show to the player
    *   The number of menus shown to the player will always be 1 as it includes the current menu.

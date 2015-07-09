@@ -1,15 +1,14 @@
 package net.samongi.CraftingMenu.Recipe;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.samongi.CraftingMenu.CraftingMenu;
-import net.samongi.SamongiLib.Items.ItemUtil;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
 
 /**A recipe is something 
  * 
@@ -27,9 +26,9 @@ public class Recipe
   // The name of the recipe, Generally this is ignored if the results count == 1
   private final String recipe_name;
   // The ItemStacks required such that recipe can be crafted.
-  private final List<ItemStack> components = new ArrayList<>();
+  private final Map<String, Integer> components = new HashMap<>();
   // The ItemStacks that this recipe will produce if crafted.
-  private final List<ItemStack> results = new ArrayList<>();
+  private final Map<String, Integer> results = new HashMap<>();
   
   // If a player does not have this permission, they will not be able to craft
   //   even if the player has learned the recipe. Generally this also implies
@@ -80,8 +79,7 @@ public class Recipe
       Set<String> item_keys = components.getKeys(false);
       for(String k : item_keys)
       {
-        ItemStack i = ItemUtil.getConfigItemStack(components.getConfigurationSection(k));
-        this.components.add(i);
+        this.components.put(k, components.getInt(k));
       }
     }
     Recipe.debugLog("Found Components Amount: " + this.components.size());
@@ -121,9 +119,14 @@ public class Recipe
   
   public String getName(){return this.recipe_name;}
   
-  public List<ItemStack> getComponents(){return this.components;}
+  /**Gets the map that contains the material string for all required components
+   * This map is a copy of the original components map.
+   * 
+   * @return A map containing material string and the corresponding amount
+   */
+  public Map<String, Integer> getComponents(){return new HashMap<>(this.components);}
   
-  public List<ItemStack> getResults(){return this.results;}
+  public Map<String, Integer> getResults(){return new HashMap<>(this.results);}
   
   public boolean isLearned(){return this.learned;}
   
