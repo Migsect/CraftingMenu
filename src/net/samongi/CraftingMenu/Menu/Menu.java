@@ -19,8 +19,10 @@ import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Player.PlayerProfile;
 import net.samongi.CraftingMenu.Recipe.Recipe;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
+import net.samongi.SamongiLib.Items.ItemUtil;
 import net.samongi.SamongiLib.Menu.InventoryMenu;
 import net.samongi.SamongiLib.Menu.ButtomAction.ButtonAction;
+import net.samongi.SamongiLib.Menu.ButtomAction.ButtonOpenMenu;
 
 /** Menus consist of a list of recipes to display to a player
  *  However the menu also handls the hiding of recipes.
@@ -118,6 +120,7 @@ public class Menu
   }
   
   public String getName(){return this.menu_name;}
+  public String getSimpleName(){return this.menu_name.replace(" ", "").toLowerCase();}
   public Material getDisplayMaterial(){return this.display_material;}
   
   public boolean hasClickMaterial(){return this.click_material != null;}
@@ -136,6 +139,7 @@ public class Menu
 
     Set<Menu> menus = this.getShownMenus(player.getUniqueId());
     Set<Integer> filled_slots = this.getAllFilledSlots();
+    Set<Integer> menu_slots = this.sub_menus.keySet();
     Set<Recipe> recipes = this.getShownRecipes(player.getUniqueId());
     
     // creating all the sub menus.
@@ -148,11 +152,19 @@ public class Menu
       Material display = m.getDisplayMaterial();
       ButtonAction button = new ButtonAction()
       {
-        Menu menu = m;
         @Override
         public void onButtonPress()
         {
-          m.getInventoryMenu(player).openMenu();;
+          InventoryMenu current_m = m.getInventoryMenu(player);
+          int size = current_m.getInventory().getSize();
+
+          ItemStack display_return = new ItemStack(Material.BOOK);
+          ItemMeta im = display_return.getItemMeta();
+          im.setDisplayName(ChatColor.AQUA + "Return to Crafting");
+          display_return.setItemMeta(im);
+          ButtonOpenMenu menu_button = new ButtonOpenMenu(menu, display_return);
+          menu_button.register(current_m, size - 1); // putting it in the bottom right of the menu
+          
         }
       };
       ItemStack button_item = new ItemStack(display);
@@ -164,7 +176,63 @@ public class Menu
       menu.addLeftClickAction(slot, button);
     }
     // creating all the filled slots.
-    
+    for(String s : this.filled_slots.keySet())
+    {
+      ItemStack fill_item = ItemUtil.getItemStack(s);
+      ItemMeta im = fill_item.getItemMeta();
+      im.setDisplayName("");
+      fill_item.setItemMeta(im);
+      Set<Integer> slots = this.filled_slots.get(s);
+      for(int i : slots)
+      {
+        menu.setItem(i, fill_item.clone());
+      }
+    }
+    // filling all the slots with the recipes.
+    int index = 0;
+    for(Recipe r : recipes)
+    {
+      // finding a slot to place it in.
+      while(filled_slots.contains(index) || menu_slots.contains(index)) index ++;
+      if(index >= this.rows * 9) break;
+      menu.setItem(index, r.getMenuItem(player));
+      
+      // creating the button for crafting the recipe.
+      ButtonAction craft_button = new ButtonAction(){
+        Recipe recipe = r;
+        Player p = player;
+        @Override
+        public void onButtonPress()
+        {
+          recipe.craftRecipe(p);
+        }
+      };
+      // On right click this will open up the components listing.
+      ButtonAction components_button = new ButtonAction(){
+        Recipe recipe = r;
+        InventoryMenu m = menu;
+        @Override
+        public void onButtonPress()
+        {
+          recipe.getComponentDetails(m).openMenu();;
+        }
+        
+      };
+      // On shift right click this will open up the results listing
+      ButtonAction results_button = new ButtonAction(){
+        Recipe recipe = r;
+        InventoryMenu m = menu;
+        @Override
+        public void onButtonPress()
+        {
+          recipe.getResultDetails(m).openMenu();;
+        }
+      };
+      // Setting all the click states.
+      menu.addLeftClickAction(index, craft_button);
+      menu.addRightClickAction(index, components_button, false);
+      menu.addRightClickAction(index, results_button, true);
+    }
     
     return menu;
   }

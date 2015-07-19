@@ -18,6 +18,7 @@ public class MenuManager
   static private void log(String message){CraftingMenu.log("[MenuManager] " + message);}
   static private void debugLog(String message){CraftingMenu.debugLog("[MenuManager] " + message);}
   
+  // Menus by their simple name (all lowercase, all spaces underscores
   private final Map<String, Menu> menus = new HashMap<>();
   
   // These menus happen when the associated string materials are clicked or used.
@@ -66,8 +67,9 @@ public class MenuManager
     }
   }
   
-  public Menu getMenu(String name){return menus.get(name);}
-  public boolean containsMenu(String name){return menus.containsKey(name);}
+  public Menu getMenu(String name){return menus.get(name.toLowerCase().replace(" ", ""));}
+  public Set<String> getMenus(){return menus.keySet();}
+  public boolean containsMenu(String name){return menus.containsKey(name.toLowerCase().replace(" ", ""));}
   
   public boolean containsRightClick(String material){return this.right_click_menus.containsKey(material);}
   public Menu getRightClick(String material){return this.right_click_menus.get(material);}
@@ -80,7 +82,7 @@ public class MenuManager
   
   public boolean addMenu(Menu menu)
   {
-    if(this.menus.containsKey(menu.getName()))
+    if(this.menus.containsKey(menu.getSimpleName()))
     {
       MenuManager.log("Error registering new menu:");
       MenuManager.log("  Menu with name '" + menu.getName() + "' already exists.");
@@ -88,7 +90,7 @@ public class MenuManager
       return false;
     }
     MenuManager.debugLog("Registered menu with name '" + menu.getName() + "'");
-    this.menus.put(menu.getName(), menu);
+    this.menus.put(menu.getSimpleName(), menu);
     
     if(menu.hasClickMaterial() && menu.hasClickMaterialType())
     {

@@ -1,14 +1,24 @@
 package net.samongi.CraftingMenu.Recipe;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import net.md_5.bungee.api.ChatColor;
 import net.samongi.CraftingMenu.CraftingMenu;
+import net.samongi.CraftingMenu.Recipe.Component.Component;
+import net.samongi.CraftingMenu.Recipe.Result.Result;
+import net.samongi.SamongiLib.Items.ItemUtil;
+import net.samongi.SamongiLib.Menu.InventoryMenu;
+import net.samongi.SamongiLib.Menu.ButtomAction.ButtonOpenMenu;
+import net.samongi.SamongiLib.Utilities.TextUtil;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**A recipe is something 
  * 
@@ -25,10 +35,11 @@ public class Recipe
   
   // The name of the recipe, Generally this is ignored if the results count == 1
   private final String recipe_name;
-  // The ItemStacks required such that recipe can be crafted.
-  private final Map<String, Integer> components = new HashMap<>();
+  private final String display_material;
+  // The components required such that recipe can be crafted.
+  private final List<Component> components = new ArrayList<>();
   // The ItemStacks that this recipe will produce if crafted.
-  private final Map<String, Integer> results = new HashMap<>();
+  private final List<Result> results = new ArrayList<>();
   
   // If a player does not have this permission, they will not be able to craft
   //   even if the player has learned the recipe. Generally this also implies
@@ -73,16 +84,14 @@ public class Recipe
     }
     Recipe.debugLog("Found recipe name to be: " + this.recipe_name );
     
-    if(section.getKeys(false).contains("components"))
-    {
-      ConfigurationSection components = section.getConfigurationSection("components");
-      Set<String> item_keys = components.getKeys(false);
-      for(String k : item_keys)
-      {
-        this.components.put(k, components.getInt(k));
-      }
-    }
+    this.display_material = section.getString("display","PAPER");
+    Recipe.debugLog("Found recipe display mat to be: " + this.display_material );
+    
+    // TODO Components being added
     Recipe.debugLog("Found Components Amount: " + this.components.size());
+    
+    // TODO Results being added
+    Recipe.debugLog("Found Results Amount: " + this.results.size());
     
     this.permission = section.getString("permission", "");
     Recipe.debugLog("Found recipe permission to be: " + this.permission );
@@ -117,26 +126,103 @@ public class Recipe
     this.learn_pool.removeAll(conflict_pool);
   }
   
+  /**Returns the name of the recipe
+   * 
+   * @return The name of the recipe.
+   */
   public String getName(){return this.recipe_name;}
   
-  /**Gets the map that contains the material string for all required components
-   * This map is a copy of the original components map.
+  /**Returns an item depicting this recipe for the player.
+   * This will display status on the player's required items.
    * 
-   * @return A map containing material string and the corresponding amount
+   * @param player The player to display this recipe to.
+   * @return The ItemStack representing the display.
    */
-  public Map<String, Integer> getComponents(){return new HashMap<>(this.components);}
+  public ItemStack getMenuItem(Player player)
+  {
+    ItemStack menu_item = ItemUtil.getItemStack(this.display_material);
+    String display_name = TextUtil.formatString(recipe_name);
+    ItemMeta im = menu_item.getItemMeta();
+    im.setDisplayName(display_name);
+    List<String> lore = new ArrayList<>();
+    lore.add(ChatColor.YELLOW + "Components:");
+    for(Component c : this.components)
+    {
+      String line = ChatColor.WHITE + "- ";
+      if(c.hasComponent(player)) line += ChatColor.GREEN;
+      else line += ChatColor.RED;
+      line += c.getDisplay();
+      lore.add(line);
+    }
+    lore.add(ChatColor.YELLOW + "Results:");
+    for(Result r : this.results)
+    {
+      lore.add(ChatColor.WHITE + "- " + r.getDisplay());
+    }
+    lore.add(ChatColor.AQUA + "RC for Component Info:");
+    lore.add(ChatColor.AQUA + "Shift-RC for Result Info:");
+    im.setLore(lore);
+    menu_item.setItemMeta(im);
+    
+    return menu_item;
+  }
   
-  public Map<String, Integer> getResults(){return new HashMap<>(this.results);}
+  /**Gets a list of all the components that this recipe requires to
+   * craft the results.
+   * 
+   * @return A list of components
+   */
+  public List<Component> getComponents(){return new ArrayList<>(this.components);}
   
+  /**Gets a list of all the results this recipe will create.
+   * 
+   * @return A list of results
+   */
+  public List<Result> getResults(){return new ArrayList<>(this.results);}
+  
+  /**Returns true if this recipe is learned by default.
+   * The recipe will not be learned if it has a prereq, but once
+   * the prereq is met, then it will be learned. This can be used as an
+   * alternative means for a learning pool.
+   * 
+   * @return True if it is learned by default.
+   */
   public boolean isLearned(){return this.learned;}
   
+  /**Returns true if this recipe is hidden before learned.
+   * 
+   * @return
+   */
   public boolean isHidden(){return this.hidden;}
   
+  /**Returns a set of prereqs for this recipe to be used or learned.
+   * 
+   * @return The set of prereq recipes
+   */
   public Set<String> getPrerequisites(){return this.prerequisites;}
   
+  /**Returns the raw, unabridged learning pool for this recipe. This doesn't
+   * remove any recipes that do not have this recipe in their learning pool as well.
+   * 
+   * @return The raw learning pool.
+   */
   public Set<String> getLearnPool(){return this.learn_pool;}
+  /**Checks to see if this recipe is in the recipe's learning pool.
+   * 
+   * @param recipe The other recipe
+   * @return True if it is.
+   */
   public boolean isInLearnPool(String recipe){return this.learn_pool.contains(recipe);}
+  /**Checks to see if this recipe is in the recipe's learning pool.
+   * 
+   * @param recipe The other recipe
+   * @return True if it is.
+   */
   public boolean isInLearnPool(Recipe recipe){return this.isInLearnPool(recipe.getName());}
+  /**Checks the set of recipes that should be learned with this recipe in tandem.
+   * 
+   * @return The set of recipes defining this recipes 'learning pool'
+   */
   public Set<Recipe> getTrueLearnPool()
   {
     Set<Recipe> pool = new HashSet<>();
@@ -150,21 +236,131 @@ public class Recipe
     }
     return pool;
   }  
-  
+  /**Checks to see if this recipe has the sorting tag.
+   * 
+   * @param tag The tag to check for.
+   * @return True if this recipe has the sorting tag.
+   */
   public boolean hasSortingTag(String tag){return this.sorting_tags.contains(tag);}
+  /**Gets the sorting tags that this recipe is sorted under.
+   * 
+   * @return A set of all the sorting tags
+   */
   public Set<String> getSortingTags(){return this.sorting_tags;}
   
+  /**Checks to see if this recipe has a conflict with this recipe
+   * 
+   * @param recipe The recipe to check against
+   * @return True if there is a conflict
+   */
   public boolean hasConflict(String recipe)
   {
     Recipe r = this.manager.getRecipe(recipe);
     if(r == null) return false;
     return this.hasConflict(r);
   }
+  /**Checks to see if this recipe has a conflict with this recipe.
+   * 
+   * @param recipe The recipe to check against
+   * @return True if there is a conflict.
+   */
   public boolean hasConflict(Recipe recipe)
   {
     if(this.conflict_pool.contains(recipe.getName())) return true;
     if(recipe.conflict_pool.contains(this.getName())) return true;
     return false;
   }
+  /**Returns the set of other recipes that this recipe has a conflict with.
+   * 
+   * @return The set of other recipes that are conflicting
+   */
   public Set<String> getConflictPool(){return this.conflict_pool;}
+  
+  /**Will attempt to craft the recipe for the player. Removing the neccessary items
+   * If the player does not have the items, the recipe will fail and return false
+   * 
+   * @param player The player to craft the recipe for.
+   * @return True if it was successful and requirements were met.
+   */
+  public boolean craftRecipe(Player player)
+  {
+    if(!this.hasComponents(player)) return false;
+    for(Component c : this.components) c.removeComponent(player);
+    for(Result r : this.results) r.addResult(player);
+    
+    return true;
+  }
+  
+  /**Will check to see if the player has the required components for this recipe
+   * 
+   * @param player The player to check components for.
+   * @return True if the player has the required components
+   */
+  public boolean hasComponents(Player player)
+  {
+    for(Component c : this.components) if(!c.hasComponent(player)) return false;
+    return true;
+  }
+  
+  /**Will return an inventory menu that displays the results this recipe will produce
+   * 
+   * @param prev The previous menu that this is being generated from.
+   * @return An inventory menu
+   */
+  public InventoryMenu getResultDetails(InventoryMenu prev)
+  {
+    int rows = 6;
+    InventoryMenu menu = new InventoryMenu(prev.getPlayer(), rows, this.recipe_name + " Results");
+    int menu_slot = 0;
+    for(Result r : this.results)
+    {
+      ItemStack[] menu_items = r.getMenuItems();
+      for(ItemStack i : menu_items)
+      {
+        menu.setItem(menu_slot, i);
+        menu_slot++;
+      }
+    }
+    // Creating the return button.
+    ItemStack display_return = new ItemStack(Material.PAPER);
+    ItemMeta im = display_return.getItemMeta();
+    im.setDisplayName(ChatColor.AQUA + "Return to Crafting");
+    display_return.setItemMeta(im);
+    ButtonOpenMenu menu_button = new ButtonOpenMenu(prev, display_return);
+    menu_button.register(menu, 6 * 9 - 1); // putting it in the bottom right of the menui
+    
+    // Returning the generated menu.
+    return menu;
+  }
+  /**Will return an inventory menu that displays the components this recipe will require
+   * 
+   * @param prev The previous menu that this is being generated from.
+   * @return An inventory menu
+   */
+  public InventoryMenu getComponentDetails(InventoryMenu prev)
+  {
+    int rows = 6;
+    InventoryMenu menu = new InventoryMenu(prev.getPlayer(), rows, this.recipe_name + " Components");
+    int menu_slot = 0;
+    for(Component c : this.components)
+    {
+      ItemStack[] menu_items = c.getMenuItems();
+      for(ItemStack i : menu_items)
+      {
+        menu.setItem(menu_slot, i);
+        menu_slot++;
+      }
+    }
+    // Creating the return button.
+    ItemStack display_return = new ItemStack(Material.PAPER);
+    ItemMeta im = display_return.getItemMeta();
+    im.setDisplayName(ChatColor.AQUA + "Return to Crafting");
+    display_return.setItemMeta(im);
+    ButtonOpenMenu menu_button = new ButtonOpenMenu(prev, display_return);
+    menu_button.register(menu, 6 * 9 - 1); // putting it in the bottom right of the menui
+    
+    // Returning the generated menu.
+    
+    return menu;
+  }
 }
