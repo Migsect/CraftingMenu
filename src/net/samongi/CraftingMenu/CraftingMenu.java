@@ -5,24 +5,29 @@ import java.util.logging.Logger;
 
 import net.samongi.CraftingMenu.Commands.CommandHelp;
 import net.samongi.CraftingMenu.Commands.CommandMenu;
+import net.samongi.CraftingMenu.Listeners.PlayerListener;
 import net.samongi.CraftingMenu.Menu.MenuManager;
 import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
 import net.samongi.SamongiLib.CommandHandling.CommandHandler;
 import net.samongi.SamongiLib.Configuration.ConfigFile;
 
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class CraftingMenu extends JavaPlugin
 {
   static private Logger logger;
   static private boolean debug;
+  static private CraftingMenu plugin = null;
+  
+  static public CraftingMenu getMainClass(){return CraftingMenu.plugin;}
   
   static final public void log(String to_log){logger.info(to_log);}
   static final public void debugLog(String to_log){if(debug == true) logger.info(to_log);}
   static final public boolean debug(){return debug;}
   
-  @SuppressWarnings("unused")
   private PlayerManager player_manager;
   @SuppressWarnings("unused")
   private RecipeManager recipe_manager;
@@ -33,7 +38,8 @@ public class CraftingMenu extends JavaPlugin
   
   public void onEnable()
   {
-    logger = this.getLogger();
+  	CraftingMenu.plugin = this;
+  	CraftingMenu.logger = this.getLogger();
     
     // config handling.
     File config_file = new File(this.getDataFolder(),"config.yml");
@@ -43,7 +49,7 @@ public class CraftingMenu extends JavaPlugin
       this.getConfig().options().copyDefaults(true);
       this.saveConfig();
     }
-    debug = this.getConfig().getBoolean("debug", true);
+    CraftingMenu.debug = this.getConfig().getBoolean("debug", true);
     CraftingMenu.log("Debug set to: " + debug);
     
     // Copying resources
@@ -64,7 +70,7 @@ public class CraftingMenu extends JavaPlugin
     if(!recipe_files.exists() || !recipe_files.isDirectory()) recipe_files.mkdirs();
     this.recipe_manager = new RecipeManager(recipe_files);
     
-    // Setting up the recipe manager.
+    // Setting up the menu manager.
     File menu_files = new File(this.getDataFolder(), "menus");
     if(!menu_files.exists() || !menu_files.isDirectory()) menu_files.mkdirs();
     this.menu_manager = new MenuManager(menu_files);
@@ -73,5 +79,18 @@ public class CraftingMenu extends JavaPlugin
     this.command_handler = new CommandHandler(this);
     this.command_handler.registerCommand(new CommandMenu("craftmenu menu"));
     this.command_handler.registerCommand(new CommandHelp("craftmenu", this.command_handler));
+    
+    // Listeners
+    PluginManager pm = this.getServer().getPluginManager();
+    pm.registerEvents(new PlayerListener(), this);
+    
+    // Reloading all player profiles.
+    for(Player p : this.getServer().getOnlinePlayers()) this.player_manager.loadProfile(p.getUniqueId());
+    
+  }
+  
+  public void onDisable()
+  {
+  	for(Player p : this.getServer().getOnlinePlayers()) this.player_manager.unloadProfile(p.getUniqueId());
   }
 }

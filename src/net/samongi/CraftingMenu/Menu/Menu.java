@@ -162,7 +162,7 @@ public class Menu
           ItemMeta im = display_return.getItemMeta();
           im.setDisplayName(ChatColor.AQUA + "Return to Crafting");
           display_return.setItemMeta(im);
-          ButtonOpenMenu menu_button = new ButtonOpenMenu(menu, display_return);
+          ButtonOpenMenu menu_button = new ButtonOpenMenu(menu, display_return, CraftingMenu.getMainClass());
           menu_button.register(current_m, size - 1); // putting it in the bottom right of the menu
           
         }
@@ -208,24 +208,25 @@ public class Menu
         }
       };
       // On right click this will open up the components listing.
+      Menu this_menu = this;
       ButtonAction components_button = new ButtonAction(){
         Recipe recipe = r;
-        InventoryMenu m = menu;
+        Menu m = this_menu;
         @Override
         public void onButtonPress()
         {
-          recipe.getComponentDetails(m).openMenu();;
+          recipe.getComponentDetails(player, m).openMenu();;
         }
         
       };
       // On shift right click this will open up the results listing
       ButtonAction results_button = new ButtonAction(){
         Recipe recipe = r;
-        InventoryMenu m = menu;
+        Menu m = this_menu;
         @Override
         public void onButtonPress()
         {
-          recipe.getResultDetails(m).openMenu();;
+          recipe.getResultDetails(player, m).openMenu();;
         }
       };
       // Setting all the click states.

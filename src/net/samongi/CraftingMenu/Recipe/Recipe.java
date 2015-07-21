@@ -7,6 +7,7 @@ import java.util.Set;
 
 import net.md_5.bungee.api.ChatColor;
 import net.samongi.CraftingMenu.CraftingMenu;
+import net.samongi.CraftingMenu.Menu.Menu;
 import net.samongi.CraftingMenu.Recipe.Component.Component;
 import net.samongi.CraftingMenu.Recipe.Result.Result;
 import net.samongi.SamongiLib.Items.ItemUtil;
@@ -307,10 +308,10 @@ public class Recipe
    * @param prev The previous menu that this is being generated from.
    * @return An inventory menu
    */
-  public InventoryMenu getResultDetails(InventoryMenu prev)
+  public InventoryMenu getResultDetails(Player player, Menu prev)
   {
     int rows = 6;
-    InventoryMenu menu = new InventoryMenu(prev.getPlayer(), rows, this.recipe_name + " Results");
+    InventoryMenu menu = new InventoryMenu(player, rows, this.recipe_name + " Results");
     int menu_slot = 0;
     for(Result r : this.results)
     {
@@ -326,7 +327,7 @@ public class Recipe
     ItemMeta im = display_return.getItemMeta();
     im.setDisplayName(ChatColor.AQUA + "Return to Crafting");
     display_return.setItemMeta(im);
-    ButtonOpenMenu menu_button = new ButtonOpenMenu(prev, display_return);
+    ButtonOpenMenu menu_button = new ButtonOpenMenu(prev.getInventoryMenu(player), display_return, CraftingMenu.getMainClass());
     menu_button.register(menu, 6 * 9 - 1); // putting it in the bottom right of the menui
     
     // Returning the generated menu.
@@ -337,10 +338,10 @@ public class Recipe
    * @param prev The previous menu that this is being generated from.
    * @return An inventory menu
    */
-  public InventoryMenu getComponentDetails(InventoryMenu prev)
+  public InventoryMenu getComponentDetails(Player player, Menu prev)
   {
     int rows = 6;
-    InventoryMenu menu = new InventoryMenu(prev.getPlayer(), rows, this.recipe_name + " Components");
+    InventoryMenu menu = new InventoryMenu(player, rows, this.recipe_name + " Components");
     int menu_slot = 0;
     for(Component c : this.components)
     {
@@ -356,7 +357,7 @@ public class Recipe
     ItemMeta im = display_return.getItemMeta();
     im.setDisplayName(ChatColor.AQUA + "Return to Crafting");
     display_return.setItemMeta(im);
-    ButtonOpenMenu menu_button = new ButtonOpenMenu(prev, display_return);
+    ButtonOpenMenu menu_button = new ButtonOpenMenu(prev.getInventoryMenu(player), display_return, CraftingMenu.getMainClass());
     menu_button.register(menu, 6 * 9 - 1); // putting it in the bottom right of the menui
     
     // Returning the generated menu.
