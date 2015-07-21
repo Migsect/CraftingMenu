@@ -32,6 +32,8 @@ public class MenuManager
   
   public MenuManager(File menu_folder)
   {
+    MenuManager.manager = this;
+    
     this.menu_folder = menu_folder;
     this.folderParseMenus(this.menu_folder);
   }

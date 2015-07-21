@@ -24,6 +24,7 @@ public class PlayerManager
   
   public PlayerManager(File save_location)
   {
+    PlayerManager.manager = this;
     this.save_folder = save_location;
   }
   
@@ -36,19 +37,35 @@ public class PlayerManager
     return null; // We return null and not a new profile because there is a good chance the player never connected
   }
   
+  /**This is called by the PlayerListener object.
+   * 
+   * @param event
+   */
   public void onPlayerJoin(PlayerJoinEvent event)
   {
     UUID player = event.getPlayer().getUniqueId();
     this.loadProfile(player);
   }
-  
+  /**This is called by the PlayerListener object.
+   * 
+   * @param event
+   */
   public void onPlayerQuit(PlayerQuitEvent event)
   {
     UUID player = event.getPlayer().getUniqueId();
     this.unloadProfile(player);
   }
   
+  /**Checks to see if the player's profile is loaded.
+   * 
+   * @param player The player UUID to check to see if it is loaded.
+   * @return True if the profile is loaded.
+   */
   public boolean isLoadedProfile(UUID player){return this.loaded_profiles.containsKey(player);}
+  /**Loads the player's profile, it creates one if a profile does not exist.
+   * 
+   * @param player The player to load a profile for.
+   */
   public void loadProfile(UUID player)
   {
     PlayerManager.logDebug("Loading Profile for UUID: " + player.toString());
@@ -61,6 +78,10 @@ public class PlayerManager
     this.loaded_profiles.put(player, profile);
     
   }
+  /**Unloads a player's profile.
+   * 
+   * @param player The player to unload the profile for.
+   */
   public void unloadProfile(UUID player)
   {
     PlayerManager.logDebug("Unloading Profile for UUID: " + player.toString());

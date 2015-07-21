@@ -4,3 +4,8 @@ version: 0.0
 description: Adds a crafting menu.
 author: Migsect
 depend: [SamongiLib]
+commands:
+  craftmenu:
+    description: This is the hub command for the plugin.
+    usage: /<command>
+    aliases: [cm, craftingmenu]

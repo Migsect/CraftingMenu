@@ -3,9 +3,12 @@ package net.samongi.CraftingMenu;
 import java.io.File;
 import java.util.logging.Logger;
 
+import net.samongi.CraftingMenu.Commands.CommandHelp;
+import net.samongi.CraftingMenu.Commands.CommandMenu;
 import net.samongi.CraftingMenu.Menu.MenuManager;
 import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
+import net.samongi.SamongiLib.CommandHandling.CommandHandler;
 import net.samongi.SamongiLib.Configuration.ConfigFile;
 
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,6 +28,8 @@ public class CraftingMenu extends JavaPlugin
   private RecipeManager recipe_manager;
   @SuppressWarnings("unused")
   private MenuManager menu_manager;
+  
+  private CommandHandler command_handler;
   
   public void onEnable()
   {
@@ -63,5 +68,10 @@ public class CraftingMenu extends JavaPlugin
     File menu_files = new File(this.getDataFolder(), "menus");
     if(!menu_files.exists() || !menu_files.isDirectory()) menu_files.mkdirs();
     this.menu_manager = new MenuManager(menu_files);
+    
+    // Setting up the command handler
+    this.command_handler = new CommandHandler(this);
+    this.command_handler.registerCommand(new CommandMenu("craftmenu menu"));
+    this.command_handler.registerCommand(new CommandHelp("craftmenu", this.command_handler));
   }
 }

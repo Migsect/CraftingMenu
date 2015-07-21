@@ -15,7 +15,7 @@ import net.samongi.SamongiLib.CommandHandling.SenderType;
 public class CommandMenu extends BaseCommand
 {
   
-  public CommandMenu(String command_path, MenuManager manager)
+  public CommandMenu(String command_path)
   {
     super(command_path);
     
@@ -30,6 +30,13 @@ public class CommandMenu extends BaseCommand
     this.allowed_arguments.add(types1);
   }
 
+  private boolean hasPermission(Player player, String menu)
+  {
+    if(player.isOp()) return true;
+    if(player.hasPermission("craftmenu.commandopen.*")) return true;
+    else return player.hasPermission("craftmenu.commandopen." + menu);
+  }
+  
   @Override
   public boolean run(CommandSender sender, String[] args)
   {
@@ -40,7 +47,7 @@ public class CommandMenu extends BaseCommand
       Set<String> menus = manager.getMenus();
       for(String s : menus)
       {
-        if(!sender.hasPermission("craftmenu.commandopen." + s) && !sender.hasPermission("craftmenu.commandopen.*"))
+        if(this.hasPermission((Player) sender, s))
         {
           sender.sendMessage(ChatColor.YELLOW + "- " + ChatColor.AQUA + s);
         }
@@ -55,7 +62,7 @@ public class CommandMenu extends BaseCommand
         sender.sendMessage(ChatColor.RED + "The Menu '"+ menu_name +"' does not exist.");
         return true;
       }
-      if(!sender.hasPermission("craftmenu.commandopen." + menu_name) && !sender.hasPermission("craftmenu.commandopen.*"))
+      if(!this.hasPermission((Player) sender, menu_name))
       {
         sender.sendMessage("You do not have permission to force open '" + menu_name + "'");
         return true;

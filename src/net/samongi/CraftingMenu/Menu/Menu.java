@@ -242,7 +242,7 @@ public class Menu
   {
     Set<Recipe> seen_recipes = new HashSet<>();
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
-    if(profile == null) return null;
+    if(profile == null) return seen_recipes;
     for(String s : recipes)
     {
       Recipe r = RecipeManager.getManager().getRecipe(s);
@@ -275,7 +275,7 @@ public class Menu
   {
     Set<Menu> seen_menus = new HashSet<>();
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
-    if(profile == null) return null;
+    if(profile == null) return seen_menus;
     for(String s : this.sub_menus.values())
     {
       Menu m = this.manager.getMenu(s);
