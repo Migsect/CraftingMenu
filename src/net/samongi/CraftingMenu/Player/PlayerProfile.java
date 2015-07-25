@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import net.samongi.CraftingMenu.CraftingMenu;
@@ -109,6 +110,7 @@ public class PlayerProfile implements Serializable
   public UUID getPlayerUUID(){return this.uuid;}
   public String getPlayerName(){return this.player_name;}
   
+  public Set<String> getRecipes(){return new TreeSet<String>(this.learned_recipes);}
   public boolean hasRecipe(Recipe recipe){return this.hasRecipe(recipe.getName());}
   public boolean hasRecipe(String string){return this.learned_recipes.contains(string);}
   public void removeRecipe(Recipe recipe){this.removeRecipe(recipe.getName());}

@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import net.md_5.bungee.api.ChatColor;
 import net.samongi.CraftingMenu.CraftingMenu;
 import net.samongi.CraftingMenu.Menu.Menu;
+import net.samongi.CraftingMenu.Player.PlayerManager;
+import net.samongi.CraftingMenu.Player.PlayerProfile;
 import net.samongi.CraftingMenu.Recipe.Component.Component;
 import net.samongi.CraftingMenu.Recipe.Result.Result;
 import net.samongi.SamongiLib.Items.ItemUtil;
@@ -41,6 +44,8 @@ public class Recipe
   private final List<Component> components = new ArrayList<>();
   // The ItemStacks that this recipe will produce if crafted.
   private final List<Result> results = new ArrayList<>();
+  // The components required to learn this recipe
+  private final List<Component> learn_components = new ArrayList<>();
   
   // If a player does not have this permission, they will not be able to craft
   //   even if the player has learned the recipe. Generally this also implies
@@ -94,6 +99,9 @@ public class Recipe
     // TODO Results being added
     Recipe.debugLog("Found Results Amount: " + this.results.size());
     
+    // TODO Learn Components being added
+    Recipe.debugLog("Found Learn Components Amount: " + this.learn_components.size());
+    
     this.permission = section.getString("permission", "");
     Recipe.debugLog("Found recipe permission to be: " + this.permission );
     
@@ -142,10 +150,22 @@ public class Recipe
   public ItemStack getMenuItem(Player player)
   {
     ItemStack menu_item = ItemUtil.getItemStack(this.display_material);
-    String display_name = TextUtil.formatString(recipe_name);
+    String display_name = ChatColor.WHITE + TextUtil.formatString(recipe_name);
     ItemMeta im = menu_item.getItemMeta();
     im.setDisplayName(display_name);
     List<String> lore = new ArrayList<>();
+    if(!this.hasRecipe(player))
+    {
+      lore.add(ChatColor.YELLOW + "Required to Learn:");
+      for(Component c : this.learn_components)
+      {
+        String line = ChatColor.WHITE + "- ";
+        if(c.hasComponent(player)) line += ChatColor.GREEN;
+        else line += ChatColor.RED;
+        line += c.getDisplay();
+        lore.add(line);
+      }
+    }
     lore.add(ChatColor.YELLOW + "Components:");
     for(Component c : this.components)
     {
@@ -160,8 +180,8 @@ public class Recipe
     {
       lore.add(ChatColor.WHITE + "- " + r.getDisplay());
     }
-    lore.add(ChatColor.AQUA + "RC for Component Info:");
-    lore.add(ChatColor.AQUA + "Shift-RC for Result Info:");
+    lore.add(ChatColor.AQUA + "Right-Click for Component Info");
+    lore.add(ChatColor.AQUA + "Shift Right-Click for Result Info");
     im.setLore(lore);
     menu_item.setItemMeta(im);
     
@@ -291,6 +311,21 @@ public class Recipe
     
     return true;
   }
+  /**Will learn the recipe for the player. This will remove all the components
+   * required to learn the recipe from the player.
+   * 
+   * @param player The player to learn the recipe
+   * @return True if the learning was successul.
+   */
+  public boolean learnRecipe(Player player)
+  {
+    if(!this.hasLearnComponents(player)) return false;
+    for(Component c : this.components) c.removeComponent(player);
+    PlayerProfile profile = PlayerManager.getManager().getProfile(player.getUniqueId());
+    profile.addRecipe(this);
+    
+    return true;
+  }
   
   /**Will check to see if the player has the required components for this recipe
    * 
@@ -300,6 +335,16 @@ public class Recipe
   public boolean hasComponents(Player player)
   {
     for(Component c : this.components) if(!c.hasComponent(player)) return false;
+    return true;
+  }
+  /**Will check to see if the player has the required components to learn this recipe.
+   * 
+   * @param player
+   * @return True if the player has the required components
+   */
+  public boolean hasLearnComponents(Player player)
+  {
+    for(Component c : this.learn_components) if(!c.hasComponent(player)) return false;
     return true;
   }
   
@@ -363,5 +408,22 @@ public class Recipe
     // Returning the generated menu.
     
     return menu;
+  }
+  
+  /**Will return true if the player has this recipe
+   * 
+   * @param player
+   * @return True if the player has the recipe
+   */
+  public boolean hasRecipe(Player player){return this.hasRecipe(player.getUniqueId());}
+  /**Will return true if the player has this recipe
+   * 
+   * @param player
+   * @return True if the player has the recipe
+   */
+  public boolean hasRecipe(UUID player)
+  {
+    PlayerProfile profile = PlayerManager.getManager().getProfile(player);
+    return profile.hasRecipe(this);
   }
 }

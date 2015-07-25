@@ -6,6 +6,13 @@ recipes:
     hidden: false
     sorting-tags:
      - example_recipes
+  example-recipe-11:
+    name: "Example Recipe 1.1"
+    permission: "example.permission.one"
+    learned: true
+    hidden: false
+    sorting-tags:
+     - example_recipes
   example-recipe-2:
     name: "Example Recipe 2"
     permission: "example.permission.two"

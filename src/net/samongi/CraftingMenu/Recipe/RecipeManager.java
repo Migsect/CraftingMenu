@@ -75,15 +75,16 @@ public final class RecipeManager
    */
   public boolean addRecipe(Recipe recipe)
   {
-    if(this.recipes.containsKey(recipe.getName()))
+    String recipe_key = recipe.getName().toLowerCase().replace(" ", "_");
+    if(this.recipes.containsKey(recipe_key))
     {
       RecipeManager.log("Error registering new recipe:");
-      RecipeManager.log("  Recipe with name '" + recipe.getName() + "' already exists.");
+      RecipeManager.log("  Recipe with name '" + recipe_key + "' already exists.");
       RecipeManager.log("  This means there is a recipe using the same name as this one.");
       return false;
     }
-    RecipeManager.debugLog("Registered recipe with name '" + recipe.getName() + "'");
-    this.recipes.put(recipe.getName(), recipe);
+    RecipeManager.debugLog("Registered recipe with key '" + recipe_key + "'");
+    this.recipes.put(recipe_key, recipe);
     
     Set<String> tags = recipe.getSortingTags();
     for(String t : tags)
@@ -97,7 +98,7 @@ public final class RecipeManager
    * @param recipe The recipe to check
    * @return True if the recipe exists, otherwise false.
    */
-  public boolean containsRecipe(String recipe){return this.recipes.containsKey(recipe);}
+  public boolean containsRecipe(String recipe){return this.recipes.containsKey(recipe.toLowerCase().replace(" ", "_"));}
   /**Checks to see if the recipe exists.
    * @param recipe The recipe to check
    * @return True if the recipe exists, otherwise false.
@@ -108,7 +109,7 @@ public final class RecipeManager
    * @param name The name of the recipe
    * @return The recipe object.
    */
-  public Recipe getRecipe(String name){return this.recipes.get(name);}
+  public Recipe getRecipe(String name){return this.recipes.get(name.toLowerCase().replace(" ", "_"));}
   /**Returns all registered recipes.
    * @return All the currently registered recipes
    */

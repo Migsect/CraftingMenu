@@ -4,7 +4,9 @@ import java.io.File;
 import java.util.logging.Logger;
 
 import net.samongi.CraftingMenu.Commands.CommandHelp;
+import net.samongi.CraftingMenu.Commands.CommandLearned;
 import net.samongi.CraftingMenu.Commands.CommandMenu;
+import net.samongi.CraftingMenu.Commands.CommandRecipes;
 import net.samongi.CraftingMenu.Listeners.PlayerListener;
 import net.samongi.CraftingMenu.Menu.MenuManager;
 import net.samongi.CraftingMenu.Player.PlayerManager;
@@ -79,6 +81,8 @@ public class CraftingMenu extends JavaPlugin
     this.command_handler = new CommandHandler(this);
     this.command_handler.registerCommand(new CommandMenu("craftmenu menu"));
     this.command_handler.registerCommand(new CommandHelp("craftmenu", this.command_handler));
+    this.command_handler.registerCommand(new CommandLearned("craftmenu learned"));
+    this.command_handler.registerCommand(new CommandRecipes("craftmenu recipes"));
     
     // Listeners
     PluginManager pm = this.getServer().getPluginManager();
