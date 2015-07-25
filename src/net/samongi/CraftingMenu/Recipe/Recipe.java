@@ -140,6 +140,14 @@ public class Recipe
    * @return The name of the recipe.
    */
   public String getName(){return this.recipe_name;}
+  /**returns a reduced name of the recipe
+   * This name is all lower case and has all spaces replaced with underscores
+   * This is used for many different applications, such as for the managers.
+   * A recipe should not share a reduced name with another, or else bad stuff happens.
+   * 
+   * @return The reduced name of the recipe
+   */
+  public String getReducedName(){return this.recipe_name.toLowerCase().replace(" ", "_");}
   
   /**Returns an item depicting this recipe for the player.
    * This will display status on the player's required items.

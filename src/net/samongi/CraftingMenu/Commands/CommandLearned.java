@@ -48,7 +48,7 @@ public class CommandLearned extends BaseCommand
       Player player = Bukkit.getPlayer(args[0]);
       if(player == null)
       {
-        sender.sendMessage(ChatColor.RED + "The player name you have entered does not exist.");
+        sender.sendMessage(ChatColor.RED + "The player '" + ChatColor.GREEN + args[0] + ChatColor.RED + "' does not exist.");
         return true;
       }
       this.displayLearned(sender, player);
@@ -60,7 +60,8 @@ public class CommandLearned extends BaseCommand
   {
     PlayerProfile profile = PlayerManager.getManager().getProfile(player.getUniqueId());
     Set<String> recipes = profile.getRecipes();
-    sender.sendMessage(ChatColor.YELLOW + "Recipes learned by '" + ChatColor.GOLD + player.getName() + ChatColor.YELLOW + "'");
+    sender.sendMessage(ChatColor.YELLOW + "Recipes learned by '" + ChatColor.GREEN + player.getName() + ChatColor.YELLOW + "':");
+    if(recipes.size() == 0) sender.sendMessage(ChatColor.GRAY + "This player knows no recipes...");
     for(String s : recipes)
     {
       sender.sendMessage(ChatColor.WHITE + " - " + ChatColor.AQUA + s);

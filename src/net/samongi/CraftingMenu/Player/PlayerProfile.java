@@ -111,17 +111,18 @@ public class PlayerProfile implements Serializable
   public String getPlayerName(){return this.player_name;}
   
   public Set<String> getRecipes(){return new TreeSet<String>(this.learned_recipes);}
-  public boolean hasRecipe(Recipe recipe){return this.hasRecipe(recipe.getName());}
-  public boolean hasRecipe(String string){return this.learned_recipes.contains(string);}
-  public void removeRecipe(Recipe recipe){this.removeRecipe(recipe.getName());}
-  public void removeRecipe(String string){this.learned_recipes.remove(string);}
+  public boolean hasRecipe(Recipe recipe){return this.hasRecipe(recipe.getReducedName());}
+  public boolean hasRecipe(String string){return this.learned_recipes.contains(string.toLowerCase().replace(" ", "_"));}
+  public void removeRecipe(Recipe recipe){this.removeRecipe(recipe.getReducedName());}
+  public void removeRecipe(String string){this.learned_recipes.remove(string.toLowerCase().replace(" ", "_"));}
+  public void clearRecipes(){this.learned_recipes.clear();}
   public int addRecipe(Recipe recipe)
   {
     // Getting all the recipes in its learn pool that exist.
     Set<Recipe> add_recipes = recipe.getTrueLearnPool();
     // Adding all the new recipes.
     add_recipes.add(recipe);
-    for(Recipe r : add_recipes) this.learned_recipes.add(r.getName());
+    for(Recipe r : add_recipes) this.learned_recipes.add(r.getReducedName());
     return add_recipes.size();
   }
   public void updateRecipes(RecipeManager manager)
@@ -129,17 +130,17 @@ public class PlayerProfile implements Serializable
     Set<String> remove_recipes = new HashSet<>();
     for(String s : learned_recipes)
     {
-      Recipe r = manager.getRecipe(s);
+      Recipe r = manager.getRecipe(s.toLowerCase().replace(" ", "_"));
       // Setting up for removal of all unneeded recipes.
-      if(r == null) remove_recipes.add(s);
+      if(r == null) remove_recipes.add(s.toLowerCase().replace(" ", "_"));
     }
     learned_recipes.remove(remove_recipes);
     // Adding any missing pool recipes.
     for(String s : learned_recipes)
     {
-      Recipe r = manager.getRecipe(s);
+      Recipe r = manager.getRecipe(s.toLowerCase().replace(" ", "_"));
       Set<Recipe> add_recipes = r.getTrueLearnPool();
-      for(Recipe ar : add_recipes) learned_recipes.add(ar.getName());
+      for(Recipe ar : add_recipes) learned_recipes.add(ar.getName().toLowerCase().replace(" ", "_"));
     }
   }
   public boolean saveProfile(File dir){return PlayerProfile.saveProfile(dir, this);}
