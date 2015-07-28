@@ -14,6 +14,8 @@ import net.samongi.CraftingMenu.Menu.MenuManager;
 import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
 import net.samongi.CraftingMenu.Recipe.Component.ComponentManager;
+import net.samongi.CraftingMenu.Recipe.Component.Type.ItemComponentType;
+import net.samongi.CraftingMenu.Recipe.Component.Type.LevelComponentType;
 import net.samongi.CraftingMenu.Recipe.Component.Type.MaterialComponentType;
 import net.samongi.CraftingMenu.Recipe.Result.ResultManager;
 import net.samongi.SamongiLib.CommandHandling.CommandHandler;
@@ -42,7 +44,6 @@ public class CraftingMenu extends JavaPlugin
   private MenuManager menu_manager;
   @SuppressWarnings("unused")
 	private ResultManager result_manager;
-  @SuppressWarnings("unused")
 	private ComponentManager component_manager;
   
   private CommandHandler command_handler;
@@ -98,6 +99,8 @@ public class CraftingMenu extends JavaPlugin
     // Setting up the Result and Component Managers
     this.component_manager = new ComponentManager();
     this.component_manager.registerType(new MaterialComponentType());
+    this.component_manager.registerType(new ItemComponentType());
+    this.component_manager.registerType(new LevelComponentType());
     
     this.result_manager = new ResultManager();
     
