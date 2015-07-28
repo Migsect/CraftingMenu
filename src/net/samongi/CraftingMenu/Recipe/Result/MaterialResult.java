@@ -2,6 +2,8 @@ package net.samongi.CraftingMenu.Recipe.Result;
 
 import java.util.HashMap;
 
+import net.samongi.SamongiLib.Items.ItemUtil;
+
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
@@ -92,6 +94,20 @@ public class MaterialResult implements Result
       items[i] = item;
     }
     return items;
+  }
+  
+  public static Result getResult(String str)
+  {
+    ItemStack item = ItemUtil.getItemStack(str);
+    if(item == null) return null;
+    MaterialData data = item.getData();
+    
+    String[] split_str = str.split(":");
+    int amnt = 1;
+    if(split_str.length == 3) try{amnt =Integer.parseInt(split_str[2]);}catch(NumberFormatException e){amnt = 0;}
+    if(amnt < 1) return null;
+    
+    return new MaterialResult(data, amnt);
   }
 
 }

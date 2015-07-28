@@ -19,6 +19,7 @@ import net.samongi.SamongiLib.Menu.ButtomAction.ButtonOpenMenu;
 import net.samongi.SamongiLib.Utilities.TextUtil;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -40,6 +41,9 @@ public class Recipe
   // The name of the recipe, Generally this is ignored if the results count == 1
   private final String recipe_name;
   private final String display_material;
+  private Sound craft_sound;
+  private Sound fail_sound;
+  private Sound learn_sound;
   // The components required such that recipe can be crafted.
   private final List<Component> components = new ArrayList<>();
   // The ItemStacks that this recipe will produce if crafted.
@@ -90,21 +94,65 @@ public class Recipe
     }
     Recipe.debugLog("Found recipe name to be: " + this.recipe_name );
     
+    // Getting the display item for the recipe.
     this.display_material = section.getString("display","PAPER");
-    Recipe.debugLog("Found recipe display mat to be: " + this.display_material );
+    Recipe.debugLog("Found recipe display material to be: " + this.display_material );
     
-    // TODO Components being added
+    // Getting the sounds used with this recipe
+    String craft_sound = section.getString("sound.craft", Sound.FIRE_IGNITE.toString());
+    String learn_sound = section.getString("sound.learn", Sound.LEVEL_UP.toString());
+    String fail_sound = section.getString("sound.fail", Sound.IRONGOLEM_WALK.toString());
+    this.craft_sound = Sound.valueOf(craft_sound);
+    if(this.craft_sound == null) this.craft_sound = Sound.FIRE_IGNITE;
+    this.learn_sound = Sound.valueOf(learn_sound);
+    if(this.learn_sound == null) this.learn_sound = Sound.LEVEL_UP;
+    this.fail_sound = Sound.valueOf(fail_sound);
+    if(this.fail_sound == null) this.fail_sound = Sound.IRONGOLEM_WALK;
+    
+    // Getting the components used to craft the item.
+    List<String> components = section.getStringList("craft-components");
+    if(components != null)
+    {
+      for(String s : components)
+      {
+        Component c = Component.getComponent(s);
+        if(c == null) continue;
+        this.components.add(c);
+      }
+    }
     Recipe.debugLog("Found Components Amount: " + this.components.size());
     
-    // TODO Results being added
+    // Getting the components used to craft the item.
+    List<String> results = section.getStringList("craft-results");
+    if(results != null)
+    {
+      for(String s : results)
+      {
+        Result r = Result.getResult(s);
+        if(r == null) continue;
+        this.results.add(r);
+      }
+    }
     Recipe.debugLog("Found Results Amount: " + this.results.size());
     
-    // TODO Learn Components being added
+    // Getting the learn components used to learn the item.
+    List<String> learn_components = section.getStringList("learn-components");
+    if(learn_components != null)
+    {
+      for(String s : learn_components)
+      {
+        Component c = Component.getComponent(s);
+        if(c == null) continue;
+        this.learn_components.add(c);
+      }
+    }
     Recipe.debugLog("Found Learn Components Amount: " + this.learn_components.size());
     
+    // Getting the permission
     this.permission = section.getString("permission", "");
     Recipe.debugLog("Found recipe permission to be: " + this.permission );
     
+    // Getting the flag that tell if the recipe is learned by default
     this.learned = section.getBoolean("learned", false);
     Recipe.debugLog("Found recipe learned to be: " + this.learned );
     
@@ -148,6 +196,10 @@ public class Recipe
    * @return The reduced name of the recipe
    */
   public String getReducedName(){return this.recipe_name.toLowerCase().replace(" ", "_");}
+  
+  public void playCraftSound(Player player){player.playSound(player.getLocation(), this.craft_sound, 1.0f, 1.0f);}
+  public void playLearnSound(Player player){player.playSound(player.getLocation(), this.learn_sound, 1.0f, 1.0f);}
+  public void playFailSound(Player player){player.playSound(player.getLocation(), this.fail_sound, 1.0f, 1.0f);}
   
   /**Returns an item depicting this recipe for the player.
    * This will display status on the player's required items.
@@ -328,7 +380,7 @@ public class Recipe
   public boolean learnRecipe(Player player)
   {
     if(!this.hasLearnComponents(player)) return false;
-    for(Component c : this.components) c.removeComponent(player);
+    for(Component c : this.learn_components) c.removeComponent(player);
     PlayerProfile profile = PlayerManager.getManager().getProfile(player.getUniqueId());
     profile.addRecipe(this);
     

@@ -249,7 +249,9 @@ public class Menu
           @Override
           public void onButtonPress()
           {
-            recipe.craftRecipe(p);
+            boolean ret = recipe.craftRecipe(p);
+            if(ret) recipe.playCraftSound(p);
+            else recipe.playFailSound(p);
             // Refreshing the inventory
             // task to refresh the inventory.
             BukkitRunnable task = new BukkitRunnable()
@@ -278,7 +280,9 @@ public class Menu
           @Override
           public void onButtonPress()
           {
-            recipe.learnRecipe(p);
+            boolean ret = recipe.learnRecipe(p);
+            if(ret) recipe.playLearnSound(p);
+            else recipe.playFailSound(p);
             // Refreshing the inventory
             // task to refresh the inventory.
             BukkitRunnable task = new BukkitRunnable()
@@ -286,7 +290,7 @@ public class Menu
               @Override
               public void run()
               {
-                m.getInventoryMenu(p).openMenu();;
+                m.getInventoryMenu(p).openMenu();
               }
               
             };

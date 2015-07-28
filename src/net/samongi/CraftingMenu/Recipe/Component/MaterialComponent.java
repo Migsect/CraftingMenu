@@ -2,6 +2,8 @@ package net.samongi.CraftingMenu.Recipe.Component;
 
 import java.util.HashMap;
 
+import net.samongi.SamongiLib.Items.ItemUtil;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -48,6 +50,7 @@ public class MaterialComponent implements Component
     int rem_amnt = this.amount;
     for(ItemStack i : items)
     {
+      if(i == null) continue;
       Material mat = i.getData().getItemType();
       if(!mat.equals(material.getItemType())) continue;
       byte data = i.getData().getData();
@@ -121,4 +124,17 @@ public class MaterialComponent implements Component
     return items;
   }
 
+  public static Component getComponent(String str)
+  {
+    ItemStack item = ItemUtil.getItemStack(str);
+    if(item == null) return null;
+    MaterialData data = item.getData();
+    
+    String[] split_str = str.split(":");
+    int amnt = 1;
+    if(split_str.length == 3) try{amnt = Integer.parseInt(split_str[2]);}catch(NumberFormatException e){amnt = 0;}
+    if(amnt < 1) return null;
+    
+    return new MaterialComponent(data, amnt, true);
+  }
 }

@@ -2,6 +2,9 @@ package net.samongi.CraftingMenu.Recipe.Component;
 
 import java.util.HashMap;
 
+import net.samongi.SamongiLib.Items.ItemUtil;
+
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -124,6 +127,12 @@ public class ItemComponent implements Component
       items[i] = item;
     }
     return items;
+  }
+  
+  public static Component getComponent(ConfigurationSection section)
+  {
+    ItemStack item = ItemUtil.getConfigItemStack(section);
+    return new ItemComponent(item);
   }
 
 }
