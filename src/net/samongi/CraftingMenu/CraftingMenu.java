@@ -13,6 +13,9 @@ import net.samongi.CraftingMenu.Listeners.PlayerListener;
 import net.samongi.CraftingMenu.Menu.MenuManager;
 import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Recipe.RecipeManager;
+import net.samongi.CraftingMenu.Recipe.Component.ComponentManager;
+import net.samongi.CraftingMenu.Recipe.Component.Type.MaterialComponentType;
+import net.samongi.CraftingMenu.Recipe.Result.ResultManager;
 import net.samongi.SamongiLib.CommandHandling.CommandHandler;
 import net.samongi.SamongiLib.Configuration.ConfigFile;
 
@@ -37,6 +40,10 @@ public class CraftingMenu extends JavaPlugin
   private RecipeManager recipe_manager;
   @SuppressWarnings("unused")
   private MenuManager menu_manager;
+  @SuppressWarnings("unused")
+	private ResultManager result_manager;
+  @SuppressWarnings("unused")
+	private ComponentManager component_manager;
   
   private CommandHandler command_handler;
   
@@ -87,6 +94,12 @@ public class CraftingMenu extends JavaPlugin
     this.command_handler.registerCommand(new CommandRecipes("craftmenu recipes"));
     this.command_handler.registerCommand(new CommandLearn("craftmenu learn"));
     this.command_handler.registerCommand(new CommandUnlearn("craftmenu unlearn"));
+    
+    // Setting up the Result and Component Managers
+    this.component_manager = new ComponentManager();
+    this.component_manager.registerType(new MaterialComponentType());
+    
+    this.result_manager = new ResultManager();
     
     // Listeners
     PluginManager pm = this.getServer().getPluginManager();

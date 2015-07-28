@@ -1,6 +1,7 @@
 package net.samongi.CraftingMenu.Recipe.Component;
 
 import java.util.HashMap;
+import java.util.Random;
 
 import net.samongi.SamongiLib.Items.ItemUtil;
 
@@ -13,31 +14,29 @@ import org.bukkit.material.MaterialData;
 public class MaterialComponent implements Component
 {
   private final MaterialData material;
-  private final int amount;
+  private final int max_amnt;
+  private final int min_amnt;
   private final boolean check_data;
   
-  public MaterialComponent(ItemStack item)
-  {
-    this.amount = item.getAmount();
-    this.material = item.getData();
-    this.check_data = false;
-  }
-  public MaterialComponent(ItemStack item, int amt)
-  {
-    this.material = item.getData();
-    this.amount = amt;
-    this.check_data = false;
-  }
   public MaterialComponent(MaterialData mat, int amt)
   {
     this.material = mat;
-    this.amount = amt;
+    this.min_amnt = amt;
+    this.max_amnt = amt;
     this.check_data = false;
   }
   public MaterialComponent(MaterialData mat, int amt, boolean check_data)
   {
     this.material = mat;
-    this.amount = amt;
+    this.min_amnt = amt;
+    this.max_amnt = amt;
+    this.check_data = check_data;
+  }
+  public MaterialComponent(MaterialData mat, int min_amt, int max_amt, boolean check_data)
+  {
+  	this.material = mat;
+    this.min_amnt = min_amt;
+    this.max_amnt = max_amt;
     this.check_data = check_data;
   }
   
@@ -47,7 +46,7 @@ public class MaterialComponent implements Component
   {
     Inventory inv = player.getInventory();
     ItemStack[] items = inv.getContents();
-    int rem_amnt = this.amount;
+    int rem_amnt = this.max_amnt;
     for(ItemStack i : items)
     {
       if(i == null) continue;
@@ -68,7 +67,9 @@ public class MaterialComponent implements Component
   {
     Inventory inv = player.getInventory();
     HashMap<Integer, ? extends ItemStack> items = inv.all(material.getItemType());
-    int rem_amnt = this.amount;
+    // Getting the amount to remove, which will be between the min and max range.
+    Random rand = new Random();
+    int rem_amnt = this.min_amnt + rand.nextInt(this.max_amnt - this.min_amnt + 1);
     for(int i : items.keySet())
     {
       ItemStack item = items.get(i);
@@ -84,7 +85,7 @@ public class MaterialComponent implements Component
         rem_amnt -= amnt;
         inv.clear(i);
       }
-      
+      // When we reach 0, we will break because we do not need to search any more items.
       if(rem_amnt == 0) break;
     }
     player.updateInventory();
@@ -94,17 +95,26 @@ public class MaterialComponent implements Component
   @Override
   public String getDisplay()
   {
+  	// Getting the material name, this should be replaced with a more friendly means of doing so.
     String raw_name = this.material.getItemType().toString();
-    String raw_data = "" + this.material.getData();
-    String raw_amnt = "" + this.amount;
+    
+    // getting the data
+    String raw_data = "";
+    if(this.check_data) raw_data = "" + this.material.getData();
+    else raw_data = "?";
+    
+    // Getting the raw_amount
+    String raw_amnt = "" + this.min_amnt + "-" + this.max_amnt;
+    
+    // Compiling all the above variables.
     return raw_name + ":" + raw_data + " x" + raw_amnt;
   }
   @Override
   public ItemStack[] getMenuItems()
   {
-    int stacks = (int) Math.ceil(amount / 64.0);
+    int stacks = (int) Math.ceil(this.max_amnt / 64.0);
     ItemStack[] items = new ItemStack[stacks];
-    int remain = this.amount;
+    int remain = this.max_amnt;
     for(int i = 0; i < stacks; i++)
     {
       ItemStack item = new ItemStack(this.material.getItemType());
