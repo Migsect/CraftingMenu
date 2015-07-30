@@ -1,6 +1,5 @@
 package net.samongi.CraftingMenu.Recipe.Result;
 
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,26 +22,4 @@ public interface Result
    * @return An itemstack that would display the item.
    */
   public ItemStack[] getMenuItems();
-  
-  static Result getResult(ConfigurationSection section, String path)
-  {
-    String str = section.getString(path);
-    if(str != null) return Result.getResult(str);
-    ConfigurationSection sub_section = section.getConfigurationSection(path);
-    if(sub_section!= null) return Result.getResult(sub_section);
-    return null;
-  }
-  
-  static Result getResult(ConfigurationSection section)
-  {
-    return null;
-  }
-  
-  static Result getResult(String str)
-  {
-    Result result = null;
-        
-    if(result == null) result = MaterialResult.getResult(str);
-    return result;
-  }
 }

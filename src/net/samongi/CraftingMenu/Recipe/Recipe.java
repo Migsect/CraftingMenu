@@ -214,10 +214,23 @@ public class Recipe
     ItemMeta im = menu_item.getItemMeta();
     im.setDisplayName(display_name);
     List<String> lore = new ArrayList<>();
-    if(!this.hasRecipe(player))
+    
+    if(this.hasPrerequisites(player) && !this.hasConflicts(player))
     {
-      lore.add(ChatColor.YELLOW + "Required to Learn:");
-      for(Component c : this.learn_components)
+      if(!this.hasRecipe(player))
+      {
+        lore.add(ChatColor.YELLOW + "Required to Learn:");
+        for(Component c : this.learn_components)
+        {
+          String line = ChatColor.WHITE + "- ";
+          if(c.hasComponent(player)) line += ChatColor.GREEN;
+          else line += ChatColor.RED;
+          line += c.getDisplay();
+          lore.add(line);
+        }
+      }
+      lore.add(ChatColor.YELLOW + "Components:");
+      for(Component c : this.components)
       {
         String line = ChatColor.WHITE + "- ";
         if(c.hasComponent(player)) line += ChatColor.GREEN;
@@ -225,23 +238,44 @@ public class Recipe
         line += c.getDisplay();
         lore.add(line);
       }
+      lore.add(ChatColor.YELLOW + "Results:");
+      for(Result r : this.results)
+      {
+        lore.add(ChatColor.WHITE + "- " + r.getDisplay());
+      }
+      lore.add(ChatColor.AQUA + "Right-Click for Component Info");
+      lore.add(ChatColor.AQUA + "Shift Right-Click for Result Info");
     }
-    lore.add(ChatColor.YELLOW + "Components:");
-    for(Component c : this.components)
+    else if(this.hasConflicts(player))
     {
-      String line = ChatColor.WHITE + "- ";
-      if(c.hasComponent(player)) line += ChatColor.GREEN;
-      else line += ChatColor.RED;
-      line += c.getDisplay();
-      lore.add(line);
+    	lore.add(ChatColor.RED + "Conflicting Recipes:");
+    	Set<String> conflicts = this.getConflictPool();
+      PlayerProfile profile = PlayerManager.getManager().getProfile(player.getUniqueId());
+      for(String s : conflicts)
+      {
+      	if(!profile.hasRecipe(s)) continue;
+      	Recipe r = RecipeManager.getManager().getRecipe(s);
+      	if(r == null) continue;
+      	String lore_line = ChatColor.WHITE + "- " + ChatColor.YELLOW + r.getName();
+      	lore.add(lore_line);
+      }
     }
-    lore.add(ChatColor.YELLOW + "Results:");
-    for(Result r : this.results)
+    else
     {
-      lore.add(ChatColor.WHITE + "- " + r.getDisplay());
+      lore.add(ChatColor.RED + "Prerequisites:");
+      PlayerProfile profile = PlayerManager.getManager().getProfile(player.getUniqueId());
+      for(String s : this.prerequisites)
+      {
+      	Recipe r = RecipeManager.getManager().getRecipe(s);
+      	if(r == null) continue;
+      	String lore_line = ChatColor.WHITE + "- ";
+      	if(profile.hasRecipe(s)) lore_line += ChatColor.GREEN;
+      	else lore_line += ChatColor.RED;
+      	lore_line += r.getName();
+      	lore.add(lore_line);
+      }
     }
-    lore.add(ChatColor.AQUA + "Right-Click for Component Info");
-    lore.add(ChatColor.AQUA + "Shift Right-Click for Result Info");
+    
     im.setLore(lore);
     menu_item.setItemMeta(im);
     
@@ -365,6 +399,8 @@ public class Recipe
    */
   public boolean craftRecipe(Player player)
   {
+  	if(!this.hasConflicts(player)) return false;
+  	if(!this.hasPrerequisites(player)) return false;
     if(!this.hasComponents(player)) return false;
     for(Component c : this.components) c.removeComponent(player);
     for(Result r : this.results) r.addResult(player);
@@ -379,6 +415,9 @@ public class Recipe
    */
   public boolean learnRecipe(Player player)
   {
+  	// Checking if the player has the prereqs.
+  	if(this.hasConflicts(player)) return false;
+  	if(!this.hasPrerequisites(player)) return false;
     if(!this.hasLearnComponents(player)) return false;
     for(Component c : this.learn_components) c.removeComponent(player);
     PlayerProfile profile = PlayerManager.getManager().getProfile(player.getUniqueId());
@@ -486,4 +525,46 @@ public class Recipe
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
     return profile.hasRecipe(this);
   }
+  
+  /**Checks to see if this player has any of the prerequisite recipes
+   * 
+   * @param player
+   * @return
+   */
+  public boolean hasPrerequisites(Player player){return this.hasPrerequisites(player.getUniqueId());}
+  /**Will check to see if the player has any recipes learned that conflicts with this recipe
+   * 
+   * @param player
+   * @return
+   */
+  public boolean hasPrerequisites(UUID player)
+  {
+    PlayerProfile profile = PlayerManager.getManager().getProfile(player);
+    Set<String> prereqs = this.getPrerequisites();
+    for(String s : prereqs) if(!profile.hasRecipe(s)) return false;
+    return true;
+  }
+  
+  /**Will check to see if the player has any recipes learned that conflicts with this recipe
+   * 
+   * @param player
+   * @return
+   */
+  public boolean hasConflicts(Player player){return this.hasConflicts(player.getUniqueId());}
+  /**Will check to see if the player has any recipes learned that conflicts with this recipe
+   * 
+   * @param player
+   * @return
+   */
+  public boolean hasConflicts(UUID player)
+  {
+  	Set<String> conflicts = this.getConflictPool();
+  	PlayerProfile profile = PlayerManager.getManager().getProfile(player);
+  	for(String s : conflicts)
+  	{
+  		if(profile.hasRecipe(s)) return true;
+  	}
+  	return false;
+  }
+  
 }

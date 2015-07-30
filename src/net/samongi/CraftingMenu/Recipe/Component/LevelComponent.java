@@ -46,20 +46,4 @@ public class LevelComponent implements Component
     
     return new ItemStack[]{item};
   }
-  
-  public static Component getComponent(String str)
-  {
-    String[] split_str = str.split(" ");
-    if(split_str.length != 2) return null;
-    if(!split_str[1].toLowerCase().equals("lv") && 
-        !split_str[1].toLowerCase().equals("lvs") && 
-        !split_str[1].toLowerCase().equals("level") && 
-        !split_str[1].toLowerCase().equals("levels")) return null;
-    int level = 0;
-    try{level = Integer.parseInt(split_str[0]);}catch(NumberFormatException e){level = -1;}
-    if(level < 0) return null;
-    return new LevelComponent(level);
-  }
-  
-
 }

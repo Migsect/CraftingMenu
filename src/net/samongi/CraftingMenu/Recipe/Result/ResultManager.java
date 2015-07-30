@@ -23,4 +23,14 @@ public class ResultManager
    * @param type
    */
   public void registerType(ResultType type){this.type.put(type.getName(), type);}
+  
+  public Result getResult(String str)
+  {
+  	for(ResultType t : type.values())
+  	{
+  		Result r = t.getResult(str);
+  		if(r != null) return r;
+  	}
+  	return null;
+  }
 }

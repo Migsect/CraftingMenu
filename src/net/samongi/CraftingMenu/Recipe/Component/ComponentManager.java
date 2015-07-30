@@ -30,7 +30,13 @@ public class ComponentManager
    * 
    * @param str
    */
-  public void getComponent(String str)
+  public Component getComponent(String str)
   {
+  	for(ComponentType t : type.values())
+  	{
+  		Component c = t.getComponent(str);
+  		if(c != null) return c;
+  	}
+  	return null;
   }
 }

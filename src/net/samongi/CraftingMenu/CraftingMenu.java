@@ -18,6 +18,9 @@ import net.samongi.CraftingMenu.Recipe.Component.Type.ItemComponentType;
 import net.samongi.CraftingMenu.Recipe.Component.Type.LevelComponentType;
 import net.samongi.CraftingMenu.Recipe.Component.Type.MaterialComponentType;
 import net.samongi.CraftingMenu.Recipe.Result.ResultManager;
+import net.samongi.CraftingMenu.Recipe.Result.Type.ItemResultType;
+import net.samongi.CraftingMenu.Recipe.Result.Type.MaterialResultType;
+import net.samongi.CraftingMenu.Recipe.Result.Type.RandomResultType;
 import net.samongi.SamongiLib.CommandHandling.CommandHandler;
 import net.samongi.SamongiLib.Configuration.ConfigFile;
 
@@ -42,7 +45,6 @@ public class CraftingMenu extends JavaPlugin
   private RecipeManager recipe_manager;
   @SuppressWarnings("unused")
   private MenuManager menu_manager;
-  @SuppressWarnings("unused")
 	private ResultManager result_manager;
 	private ComponentManager component_manager;
   
@@ -103,6 +105,9 @@ public class CraftingMenu extends JavaPlugin
     this.component_manager.registerType(new LevelComponentType());
     
     this.result_manager = new ResultManager();
+    this.result_manager.registerType(new MaterialResultType());
+    this.result_manager.registerType(new RandomResultType());
+    this.result_manager.registerType(new ItemResultType());
     
     // Listeners
     PluginManager pm = this.getServer().getPluginManager();

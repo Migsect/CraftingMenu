@@ -1,8 +1,7 @@
 package net.samongi.CraftingMenu.Recipe.Result;
 
 import java.util.HashMap;
-
-import net.samongi.SamongiLib.Items.ItemUtil;
+import java.util.Random;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,28 +10,27 @@ import org.bukkit.material.MaterialData;
 public class MaterialResult implements Result
 {
   private final MaterialData material;
-  private final int amount;
+  private final int max_amount;
+  private final int min_amount;
   
-  public MaterialResult(ItemStack item)
-  {
-    this.amount = item.getAmount();
-    this.material = item.getData();
-  }
-  public MaterialResult(ItemStack item, int amt)
-  {
-    this.material = item.getData();
-    this.amount = amt;
-  }
   public MaterialResult(MaterialData mat, int amt)
   {
     this.material = mat;
-    this.amount = amt;
+    this.max_amount = amt;
+    this.min_amount = amt;
+  }
+  public MaterialResult(MaterialData mat, int min_amt, int max_amt)
+  {
+  	this.material = mat;
+  	this.min_amount = min_amt;
+  	this.max_amount = max_amt;
   }
   
   @Override
   public void addResult(Player player)
   {
-    int rem_amnt = amount;
+  	Random rand = new Random();
+    int rem_amnt = this.min_amount + rand.nextInt(this.max_amount - this.min_amount + 1);
     while(rem_amnt > 0)
     {
       ItemStack item = new ItemStack(material.getItemType());
@@ -67,16 +65,16 @@ public class MaterialResult implements Result
   {
     String raw_name = this.material.getItemType().toString();
     String raw_data = "" + this.material.getData();
-    String raw_amnt = "" + this.amount;
+    String raw_amnt = "" + this.min_amount + "-" + this.max_amount;
     return raw_name + ":" + raw_data + " x" + raw_amnt;
   }
 
   @Override
   public ItemStack[] getMenuItems()
   {
-    int stacks = (int) Math.ceil(amount / 64.0);
+    int stacks = (int) Math.ceil((this.max_amount + this.min_amount) / 2 / 64.0);
     ItemStack[] items = new ItemStack[stacks];
-    int remain = this.amount;
+    int remain = this.max_amount;
     for(int i = 0; i < stacks; i++)
     {
       ItemStack item = new ItemStack(this.material.getItemType());
@@ -95,19 +93,4 @@ public class MaterialResult implements Result
     }
     return items;
   }
-  
-  public static Result getResult(String str)
-  {
-    ItemStack item = ItemUtil.getItemStack(str);
-    if(item == null) return null;
-    MaterialData data = item.getData();
-    
-    String[] split_str = str.split(":");
-    int amnt = 1;
-    if(split_str.length == 3) try{amnt =Integer.parseInt(split_str[2]);}catch(NumberFormatException e){amnt = 0;}
-    if(amnt < 1) return null;
-    
-    return new MaterialResult(data, amnt);
-  }
-
 }
