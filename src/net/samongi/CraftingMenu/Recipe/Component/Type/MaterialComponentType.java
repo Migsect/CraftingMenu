@@ -44,7 +44,7 @@ public class MaterialComponentType implements ComponentType
 		if(dat_str != null) ign_dat = dat_str.equals("?");
 	  
 		int dat_num = 0;
-		if(dat_str != null) try{type_id = Integer.parseInt(mat_str);}catch(NumberFormatException e){type_id = 0;}
+		if(dat_str != null) try{dat_num = Integer.parseInt(dat_str);}catch(NumberFormatException e){dat_num = 0;}
 		
 		// Getting the amount
 		// Amounts have a range as opposed to a singular amount.
@@ -64,7 +64,7 @@ public class MaterialComponentType implements ComponentType
 		
 		// Compiling the component
 		MaterialData mat_data = new MaterialData(mat, (byte) dat_num);
-		return new MaterialComponent(mat_data, min_amn, max_amn, ign_dat);
+		return new MaterialComponent(mat_data, min_amn, max_amn, !ign_dat);
 	}
 
 	@Override

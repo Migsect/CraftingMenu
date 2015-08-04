@@ -96,17 +96,29 @@ public class MenuManager
     
     if(menu.hasClickMaterial() && menu.hasClickMaterialType())
     {
+      String click_material = menu.getClickMaterial();
+      // we are going to add the 0-based data onto the end
+      String[] split_click_material = click_material.split(":");
+      if(split_click_material.length == 1) click_material += ":0";
+      
       String click_type = menu.getClickMaterialType();
-      if(click_type.toUpperCase().equals("RIGHT_CLICK_ALL")) this.addRightClickAllMenu(menu.getClickMaterial(), menu);
-      else if(click_type.toUpperCase().equals("RIGHT_CLICK")) this.addRightClickMenu(menu.getClickMaterial(), menu);
-      else if(click_type.toUpperCase().equals("SHIFT_RIGHT_CLICK_ALL")) this.addShiftRightClickMenu(menu.getClickMaterial(), menu);
+      
+      if(click_type.toUpperCase().equals("RIGHT_CLICK_ALL")) this.addRightClickAllMenu(click_material, menu);
+      else if(click_type.toUpperCase().equals("RIGHT_CLICK")) this.addRightClickMenu(click_material, menu);
+      else if(click_type.toUpperCase().equals("SHIFT_RIGHT_CLICK")) this.addShiftRightClickMenu(click_material, menu);
     }
     if(menu.hasBlockMaterial() && menu.hasBlockMaterialType())
     {
+      String click_material = menu.getClickBlock();
+      // we are going to add the 0-based data onto the end
+      String[] split_click_material = click_material.split(":");
+      if(split_click_material.length == 1) click_material += ":0";
+
       String click_type = menu.getClickBlockType();
-      if(click_type.toUpperCase().equals("RIGHT_CLICK_ALL")) this.addRightClickBlockAllMenu(menu.getClickBlock(), menu);
-      else if(click_type.toUpperCase().equals("RIGHT_CLICK")) this.addRightClickBlockMenu(menu.getClickBlock(), menu);
-      else if(click_type.toUpperCase().equals("SHIFT_RIGHT_CLICK_ALL")) this.addShiftRightClickBlockMenu(menu.getClickBlock(), menu);
+      
+      if(click_type.toUpperCase().equals("RIGHT_CLICK_ALL")) this.addRightClickBlockAllMenu(click_material, menu);
+      else if(click_type.toUpperCase().equals("RIGHT_CLICK")) this.addRightClickBlockMenu(click_material, menu);
+      else if(click_type.toUpperCase().equals("SHIFT_RIGHT_CLICK")) this.addShiftRightClickBlockMenu(click_material, menu);
     }
     
     return true;
@@ -133,7 +145,7 @@ public class MenuManager
       MenuManager.log("  This means there is a menu registered in Right Click.");
       return false;
     }
-    MenuManager.debugLog("Registered menu for RIGHT_CLICK with name '" + menu.getName() + "'");
+    MenuManager.debugLog("Registered menu for RIGHT_CLICK on '" + material + "' with name '" + menu.getName() + "'");
     this.right_click_menus.put(material, menu);
     return true;
   }
@@ -146,7 +158,7 @@ public class MenuManager
       MenuManager.log("  This means there is a menu registered in Shift Right Click.");
       return false;
     }
-    MenuManager.debugLog("Registered menu for SHIFT_RIGHT_CLICK with name '" + menu.getName() + "'");
+    MenuManager.debugLog("Registered menu for SHIFT_RIGHT_CLICK on '" + material + "' with name '" + menu.getName() + "'");
     this.shift_right_click_menus.put(material, menu);
     return true;
   }
@@ -165,7 +177,7 @@ public class MenuManager
       MenuManager.log("  This means there is a menu registered in Right Click Block.");
       return false;
     }
-    MenuManager.debugLog("Registered menu for RIGHT_CLICK_BLOCK with name '" + menu.getName() + "'");
+    MenuManager.debugLog("Registered menu for RIGHT_CLICK_BLOCK on '" + material + "' with name '" + menu.getName() + "'");
     this.right_click_block_menus.put(material, menu);
     return true;
   }
@@ -178,7 +190,7 @@ public class MenuManager
       MenuManager.log("  This means there is a menu registered in Shift Right Click Block.");
       return false;
     }
-    MenuManager.debugLog("Registered menu for SHIFT_RIGHT_CLICK_BLOCK with name '" + menu.getName() + "'");
+    MenuManager.debugLog("Registered menu for SHIFT_RIGHT_CLICK_BLOCK on '" + material + "' with name '" + menu.getName() + "'");
     this.shift_right_click_block_menus.put(material, menu);
     return true;
   }

@@ -105,6 +105,7 @@ public class MaterialComponent implements Component
     
     // Getting the raw_amount
     String raw_amnt = "" + this.min_amnt + "-" + this.max_amnt;
+    if(this.min_amnt == this.max_amnt) raw_amnt = "" + this.max_amnt;
     
     // Compiling all the above variables.
     return raw_name + ":" + raw_data + " x" + raw_amnt;

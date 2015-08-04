@@ -33,7 +33,7 @@ public class MaterialResultType implements ResultType
 		
 		// Getting all information from the data
 		int dat_num = 0;
-		if(dat_str != null) try{type_id = Integer.parseInt(mat_str);}catch(NumberFormatException e){type_id = 0;}
+		if(dat_str != null) try{dat_num = Integer.parseInt(dat_str);}catch(NumberFormatException e){dat_num = 0;}
 		
 		// Getting the amount
 		// Amounts have a range as opposed to a singular amount.

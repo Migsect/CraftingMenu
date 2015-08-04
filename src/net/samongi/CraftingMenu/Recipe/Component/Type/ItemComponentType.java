@@ -20,15 +20,16 @@ public class ItemComponentType implements ComponentType
 	public Component getComponent(String str)
 	{
 		String[] split_str = str.split(" "); // For an item, the first element should be the path.
-		if(split_str.length < 2) return null;
 		String glob_path = split_str[0];
-		String comp_flags = null;
-		String amnt_str = split_str[1];
+		String comp_flags = "";
+		String amnt_str = "1"; 
+    if(split_str.length > 1) amnt_str = split_str[1];
 		int amnt = 1;
 		try{amnt = Integer.parseInt(amnt_str);}catch(NumberFormatException e){amnt = 1;}
-		if(split_str.length > 1) comp_flags =  split_str[2].toLowerCase();
+		if(split_str.length > 2) comp_flags =  split_str[2].toLowerCase();
 		// Getting the itemstacks from the global itemstack folder.
 		List<ItemStack> items = ItemUtil.getGlobalItems(glob_path);
+		if(items == null) return null;
 		if(items.isEmpty()) return null;
 		ItemStack item = items.get(0); // Gets the first item.
 		

@@ -66,9 +66,11 @@ public class MaterialResult implements Result
     String raw_name = this.material.getItemType().toString();
     String raw_data = "" + this.material.getData();
     String raw_amnt = "" + this.min_amount + "-" + this.max_amount;
+    if(this.min_amount == this.max_amount) raw_amnt = "" + this.min_amount;
     return raw_name + ":" + raw_data + " x" + raw_amnt;
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public ItemStack[] getMenuItems()
   {
@@ -79,6 +81,7 @@ public class MaterialResult implements Result
     {
       ItemStack item = new ItemStack(this.material.getItemType());
       item.setData(this.material);
+      item.setDurability(this.material.getData());
       if(remain >= 64) 
       {
         item.setAmount(64);

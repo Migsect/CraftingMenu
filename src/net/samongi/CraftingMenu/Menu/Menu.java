@@ -142,7 +142,7 @@ public class Menu
   public String getClickMaterialType(){return this.click_material_type;}
   
   public boolean hasBlockMaterial(){return this.block_material != null;}
-  public boolean hasBlockMaterialType(){return this.click_material_type != null;}
+  public boolean hasBlockMaterialType(){return this.block_material_type != null;}
   public String getClickBlock(){return this.block_material;}
   public String getClickBlockType(){return this.block_material_type;}
   

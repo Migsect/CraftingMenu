@@ -12,7 +12,9 @@ import net.samongi.CraftingMenu.Menu.Menu;
 import net.samongi.CraftingMenu.Player.PlayerManager;
 import net.samongi.CraftingMenu.Player.PlayerProfile;
 import net.samongi.CraftingMenu.Recipe.Component.Component;
+import net.samongi.CraftingMenu.Recipe.Component.ComponentManager;
 import net.samongi.CraftingMenu.Recipe.Result.Result;
+import net.samongi.CraftingMenu.Recipe.Result.ResultManager;
 import net.samongi.SamongiLib.Items.ItemUtil;
 import net.samongi.SamongiLib.Menu.InventoryMenu;
 import net.samongi.SamongiLib.Menu.ButtomAction.ButtonOpenMenu;
@@ -109,18 +111,21 @@ public class Recipe
     this.fail_sound = Sound.valueOf(fail_sound);
     if(this.fail_sound == null) this.fail_sound = Sound.IRONGOLEM_WALK;
     
+    
     // Getting the components used to craft the item.
     List<String> components = section.getStringList("craft-components");
     if(components != null)
     {
       for(String s : components)
       {
-        Component c = Component.getComponent(s);
+        Component c = ComponentManager.getManager().getComponent(s);
+        if(c == null) Recipe.debugLog("Found component '" + s + "' to be invalid.");
         if(c == null) continue;
         this.components.add(c);
       }
     }
     Recipe.debugLog("Found Components Amount: " + this.components.size());
+    
     
     // Getting the components used to craft the item.
     List<String> results = section.getStringList("craft-results");
@@ -128,12 +133,14 @@ public class Recipe
     {
       for(String s : results)
       {
-        Result r = Result.getResult(s);
+        Result r = ResultManager.getManager().getResult(s);
+        if(r == null) Recipe.debugLog("Found result '" + s + "' to be invalid.");
         if(r == null) continue;
         this.results.add(r);
       }
     }
     Recipe.debugLog("Found Results Amount: " + this.results.size());
+    
     
     // Getting the learn components used to learn the item.
     List<String> learn_components = section.getStringList("learn-components");
@@ -141,7 +148,8 @@ public class Recipe
     {
       for(String s : learn_components)
       {
-        Component c = Component.getComponent(s);
+        Component c = ComponentManager.getManager().getComponent(s);
+        if(c == null) Recipe.debugLog("Found component '" + s + "' to be invalid.");
         if(c == null) continue;
         this.learn_components.add(c);
       }
@@ -210,6 +218,7 @@ public class Recipe
   public ItemStack getMenuItem(Player player)
   {
     ItemStack menu_item = ItemUtil.getItemStack(this.display_material);
+    if(menu_item == null) menu_item = new ItemStack(Material.PAPER);
     String display_name = ChatColor.WHITE + TextUtil.formatString(recipe_name);
     ItemMeta im = menu_item.getItemMeta();
     im.setDisplayName(display_name);
@@ -399,7 +408,7 @@ public class Recipe
    */
   public boolean craftRecipe(Player player)
   {
-  	if(!this.hasConflicts(player)) return false;
+  	if(this.hasConflicts(player)) return false;
   	if(!this.hasPrerequisites(player)) return false;
     if(!this.hasComponents(player)) return false;
     for(Component c : this.components) c.removeComponent(player);
@@ -541,6 +550,7 @@ public class Recipe
   {
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
     Set<String> prereqs = this.getPrerequisites();
+    if(prereqs.size() == 0) return true;
     for(String s : prereqs) if(!profile.hasRecipe(s)) return false;
     return true;
   }
@@ -560,10 +570,8 @@ public class Recipe
   {
   	Set<String> conflicts = this.getConflictPool();
   	PlayerProfile profile = PlayerManager.getManager().getProfile(player);
-  	for(String s : conflicts)
-  	{
-  		if(profile.hasRecipe(s)) return true;
-  	}
+  	if(conflicts.size() == 0) return false;
+  	for(String s : conflicts) if(profile.hasRecipe(s)) return true;
   	return false;
   }
   

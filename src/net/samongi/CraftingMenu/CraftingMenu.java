@@ -9,6 +9,7 @@ import net.samongi.CraftingMenu.Commands.CommandLearned;
 import net.samongi.CraftingMenu.Commands.CommandMenu;
 import net.samongi.CraftingMenu.Commands.CommandRecipes;
 import net.samongi.CraftingMenu.Commands.CommandUnlearn;
+import net.samongi.CraftingMenu.Listeners.ClickListener;
 import net.samongi.CraftingMenu.Listeners.PlayerListener;
 import net.samongi.CraftingMenu.Menu.MenuManager;
 import net.samongi.CraftingMenu.Player.PlayerManager;
@@ -79,6 +80,17 @@ public class CraftingMenu extends JavaPlugin
     if(!player_files.exists() || !player_files.isDirectory()) player_files.mkdirs(); // TODO error checking if the directory was not made.
     this.player_manager = new PlayerManager(player_files);
     
+    // Setting up the Result and Component Managers
+    this.component_manager = new ComponentManager();
+    this.component_manager.registerType(new MaterialComponentType());
+    this.component_manager.registerType(new ItemComponentType());
+    this.component_manager.registerType(new LevelComponentType());
+    
+    this.result_manager = new ResultManager();
+    this.result_manager.registerType(new MaterialResultType());
+    this.result_manager.registerType(new RandomResultType());
+    this.result_manager.registerType(new ItemResultType());
+    
     // Setting up the recipe manager.
     File recipe_files = new File(this.getDataFolder(), "recipes");
     if(!recipe_files.exists() || !recipe_files.isDirectory()) recipe_files.mkdirs();
@@ -98,20 +110,10 @@ public class CraftingMenu extends JavaPlugin
     this.command_handler.registerCommand(new CommandLearn("craftmenu learn"));
     this.command_handler.registerCommand(new CommandUnlearn("craftmenu unlearn"));
     
-    // Setting up the Result and Component Managers
-    this.component_manager = new ComponentManager();
-    this.component_manager.registerType(new MaterialComponentType());
-    this.component_manager.registerType(new ItemComponentType());
-    this.component_manager.registerType(new LevelComponentType());
-    
-    this.result_manager = new ResultManager();
-    this.result_manager.registerType(new MaterialResultType());
-    this.result_manager.registerType(new RandomResultType());
-    this.result_manager.registerType(new ItemResultType());
-    
     // Listeners
     PluginManager pm = this.getServer().getPluginManager();
     pm.registerEvents(new PlayerListener(), this);
+    pm.registerEvents(new ClickListener(), this);
     
     // Reloading all player profiles.
     for(Player p : this.getServer().getOnlinePlayers()) this.player_manager.loadProfile(p.getUniqueId());

@@ -1,5 +1,7 @@
 package net.samongi.CraftingMenu.Recipe.Result;
 
+import java.util.HashMap;
+
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,15 +25,35 @@ public class ItemResult implements Result
   @Override
   public void addResult(Player player)
   {
-    // TODO Auto-generated method stub
-    
+    ItemStack item_clone = this.item.clone();
+    int max_stack = item_clone.getMaxStackSize();
+    int stacks = this.amount / max_stack;
+    int remain = this.amount % max_stack;
+    for(int i = 0; i < stacks ; i++) 
+    {
+      item_clone.setAmount(max_stack);
+      HashMap<Integer, ItemStack> no_fit = player.getInventory().addItem(item_clone);
+      for(ItemStack s : no_fit.values()) player.getWorld().dropItem(player.getLocation(), s); 
+    }
+    if(remain != 0)
+    {
+      item_clone.setAmount(remain);
+      HashMap<Integer, ItemStack> no_fit = player.getInventory().addItem(item_clone);
+      for(ItemStack s : no_fit.values()) player.getWorld().dropItem(player.getLocation(), s);
+    }
   }
 
   @Override
   public String getDisplay()
   {
-    // TODO Auto-generated method stub
-    return null;
+    // An Item Component will have its material name if it has no name.
+    String mat_name = "";
+    mat_name = this.item.getType().toString() + ":" + this.item.getDurability() + " x" + this.amount;
+    String name = "";
+    if(item.getItemMeta().hasDisplayName()) name = item.getItemMeta().getDisplayName() + " [" + mat_name + "]";
+    else name = mat_name;
+    
+    return name;
   }
 
   @Override
