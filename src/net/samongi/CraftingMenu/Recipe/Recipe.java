@@ -319,12 +319,6 @@ public class Recipe
    */
   public boolean isHidden(){return this.hidden;}
   
-  /**Returns a set of prereqs for this recipe to be used or learned.
-   * 
-   * @return The set of prereq recipes
-   */
-  public Set<String> getPrerequisites(){return this.prerequisites;}
-  
   /**Returns the raw, unabridged learning pool for this recipe. This doesn't
    * remove any recipes that do not have this recipe in their learning pool as well.
    * 
@@ -533,6 +527,25 @@ public class Recipe
   {
     PlayerProfile profile = PlayerManager.getManager().getProfile(player);
     return profile.hasRecipe(this);
+  }
+  
+  /**Returns a set of prereqs for this recipe to be used or learned.
+   * 
+   * @return The set of prereq recipes
+   */
+  public Set<String> getPrerequisites(){return this.prerequisites;}
+  
+  /**Returns a set of a set of recipes as opposed to a set of strings.
+   * This will return, also, any of the recipe tag groups included and will
+   * weed out any improper recipes from the prereqs.
+   * 
+   * @return
+   */
+  public Set<Recipe> getExpandedPrerequisites()
+  {
+    Set<Recipe> recipes = new HashSet<>();
+    // TODO
+    return recipes;
   }
   
   /**Checks to see if this player has any of the prerequisite recipes
