@@ -12,7 +12,7 @@ import net.samongi.SamongiLib.CommandHandling.SenderType;
 
 public class CommandHelp extends BaseCommand
 {
-  CommandHandler handler;
+  private CommandHandler handler;
   
   public CommandHelp(String command_path, CommandHandler handler)
   {
